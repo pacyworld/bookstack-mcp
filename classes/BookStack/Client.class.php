@@ -18,8 +18,8 @@ class Client
 	/** @var \EnchiladaHTTP */
 	private \EnchiladaHTTP $http;
 
-	/** @var string Base URL (e.g., https://docs.example.com) */
-	private string $baseUrl;
+	/** @var array Auth headers passed with every request */
+	private array $authHeaders;
 
 	/**
 	 * Create a new BookStack API client.
@@ -31,24 +31,23 @@ class Client
 	 */
 	public function __construct(string $baseUrl, string $tokenId, string $tokenSecret, int $timeout = 30)
 	{
-		$this->baseUrl = rtrim($baseUrl, '/');
-		$this->http = new \EnchiladaHTTP($this->baseUrl);
+		$this->http = new \EnchiladaHTTP(rtrim($baseUrl, '/') . '/api');
 		$this->http->setTimeout($timeout);
-		$this->http->setCustomHeader('Authorization', "Token {$tokenId}:{$tokenSecret}");
+		$this->authHeaders = ["Authorization: Token {$tokenId}:{$tokenSecret}"];
 	}
 
 	/**
 	 * GET request.
 	 *
-	 * @param  string $path   API path (e.g., /api/books)
+	 * @param  string $path   API path (e.g., books, pages/42)
 	 * @param  array  $params Query parameters
-	 * @return array           Decoded JSON response
+	 * @return array|string   Decoded JSON response (or raw string for exports)
 	 */
-	public function get(string $path, array $params = []): array
+	public function get(string $path, array $params = []): array|string
 	{
-		$url = $this->buildUrl($path, $params);
-		$response = $this->http->get($url);
-		return $this->handleResponse($response, $path);
+		$format = str_contains($path, '/export/') ? 'raw' : 'json';
+		$result = $this->http->call($path, $params, 'GET', $this->authHeaders, null, $format);
+		return $this->handleResponse($result, $path);
 	}
 
 	/**
@@ -60,9 +59,8 @@ class Client
 	 */
 	public function post(string $path, array $data = []): array
 	{
-		$url = $this->buildUrl($path);
-		$response = $this->http->post($url, json_encode($data), 'application/json');
-		return $this->handleResponse($response, $path);
+		$result = $this->http->call($path, $data, 'POST', $this->authHeaders);
+		return $this->handleResponse($result, $path);
 	}
 
 	/**
@@ -74,9 +72,8 @@ class Client
 	 */
 	public function put(string $path, array $data = []): array
 	{
-		$url = $this->buildUrl($path);
-		$response = $this->http->put($url, json_encode($data), 'application/json');
-		return $this->handleResponse($response, $path);
+		$result = $this->http->call($path, $data, 'PUT', $this->authHeaders);
+		return $this->handleResponse($result, $path);
 	}
 
 	/**
@@ -87,68 +84,37 @@ class Client
 	 */
 	public function delete(string $path): array
 	{
-		$url = $this->buildUrl($path);
-		$response = $this->http->delete($url);
-		$code = $this->http->getHttpCode();
-		if ($code === 204) {
+		$result = $this->http->call($path, null, 'DELETE', $this->authHeaders);
+		if ($result === false) {
 			return [];
 		}
-		return $this->handleResponse($response, $path);
+		return $this->handleResponse($result, $path);
 	}
 
 	/**
-	 * Get the HTTP status code of the last request.
+	 * Handle an API response.
 	 *
-	 * @return int HTTP status code
+	 * @param  mixed  $response Decoded JSON array, raw string, or false
+	 * @param  string $path     API path (for error messages)
+	 * @return array|string     Processed response
+	 * @throws \RuntimeException On connection failure or API error
 	 */
-	public function getLastHttpCode(): int
+	private function handleResponse(mixed $response, string $path): array|string
 	{
-		return $this->http->getHttpCode();
-	}
-
-	/**
-	 * Build a full URL from path and optional query parameters.
-	 *
-	 * @param  string $path   API path
-	 * @param  array  $params Query parameters
-	 * @return string          Full URL
-	 */
-	private function buildUrl(string $path, array $params = []): string
-	{
-		$url = $this->baseUrl . '/api/' . ltrim($path, '/');
-		if (!empty($params)) {
-			$url .= '?' . http_build_query($params);
-		}
-		return $url;
-	}
-
-	/**
-	 * Handle and decode an API response.
-	 *
-	 * @param  string|false $response Raw response body
-	 * @param  string       $path     API path (for error messages)
-	 * @return array                   Decoded JSON
-	 * @throws \RuntimeException       On HTTP errors or invalid JSON
-	 */
-	private function handleResponse($response, string $path): array
-	{
-		$code = $this->http->getHttpCode();
-
 		if ($response === false) {
-			throw new \RuntimeException("BookStack API request failed: {$path} (no response)");
+			throw new \RuntimeException("BookStack API request failed: {$path}");
 		}
 
-		$decoded = json_decode($response, true);
-
-		if ($code >= 400) {
-			$message = $decoded['error']['message'] ?? $decoded['message'] ?? "HTTP {$code}";
-			throw new \RuntimeException("BookStack API error ({$path}): {$message}", $code);
+		// Raw string response (exports)
+		if (is_string($response)) {
+			return $response;
 		}
 
-		if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
-			throw new \RuntimeException("BookStack API returned invalid JSON: {$path}");
+		// Check for API error in response body
+		if (isset($response['error']['message'])) {
+			throw new \RuntimeException("BookStack API error ({$path}): " . $response['error']['message']);
 		}
 
-		return $decoded ?? [];
+		return $response ?? [];
 	}
 }
