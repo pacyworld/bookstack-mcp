@@ -29,24 +29,24 @@ jobs:
           echo 'PHAR verified' . PHP_EOL;
           "
 
-      - name: Create release
+      - name: Create release and upload PHAR
         run: |
           TAG="${GITHUB_REF_NAME}"
-          BODY="BookStack MCP Server ${TAG}\n\n- 58 tools (books, pages, chapters, shelves, search, users, roles, attachments, images, system)\n- Multi-instance support\n- PHAR binary included"
-          curl -s -X POST \
+          BODY="BookStack MCP Server ${TAG} — 58 tools, multi-instance, PHAR binary included."
+          echo "Creating release ${TAG}..."
+          RESPONSE=$(curl -s -X POST \
             -H "Authorization: token ${FORGE_TOKEN}" \
             -H "Content-Type: application/json" \
             "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases" \
-            -d "{\"tag_name\":\"${TAG}\",\"name\":\"${TAG}\",\"body\":\"$(echo -e $BODY)\"}" > /tmp/release.json
-          RELEASE_ID=$(php -r "echo json_decode(file_get_contents('/tmp/release.json'),true)['id'];")
-          echo "RELEASE_ID=${RELEASE_ID}" >> $GITHUB_ENV
-
-      - name: Upload PHAR
-        run: |
+            -d "{\"tag_name\":\"${TAG}\",\"name\":\"${TAG}\",\"body\":\"${BODY}\"}")
+          echo "Response: ${RESPONSE}"
+          RELEASE_ID=$(echo "${RESPONSE}" | php -r '$d=json_decode(file_get_contents("php://stdin"),true); if(!isset($d["id"])){fwrite(STDERR,"ERROR: ".json_encode($d)."\n");exit(1);}echo $d["id"];')
+          echo "Release ID: ${RELEASE_ID}"
+          echo "Uploading PHAR..."
           curl -s -X POST \
             -H "Authorization: token ${FORGE_TOKEN}" \
             -F "attachment=@bookstack-mcp.phar" \
             "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=bookstack-mcp.phar"
-
-    env:
-      FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
+          echo "Done."
+        env:
+          FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
