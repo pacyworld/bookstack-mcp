@@ -37,7 +37,7 @@ $component_loader = function() {
 	$dir = dir('includes');
 	if (!$dir) return $components;
 	while (false !== ($entry = $dir->read())) {
-		if ($entry === 'settings.inc.php') continue;
+		if ($entry === 'settings.inc.php' || $entry === 'bootstrap.inc.php') continue;
 		$file = 'includes' . DIRECTORY_SEPARATOR . $entry;
 		if (is_file($file) && substr($entry, -strlen('.inc.php')) === '.inc.php') {
 			$components[] = $file;
