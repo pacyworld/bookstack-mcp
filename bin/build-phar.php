@@ -62,8 +62,12 @@ define('BOOKSTACK_MCP_PHAR', true);
 Phar::mapPhar('bookstack-mcp.phar');
 $pharRoot = 'phar://bookstack-mcp.phar/';
 define('APPLICATION_LIBDIR', $pharRoot . 'libraries/');
+define('APPLICATION_CLASSDIR', $pharRoot . 'classes/');
+set_include_path(get_include_path() . PATH_SEPARATOR . $pharRoot . 'classes');
 require_once $pharRoot . 'system/app.conf.php';
 require_once $pharRoot . 'system/autoload.inc.php';
+require_once $pharRoot . 'classes/BookStack/Client.class.php';
+require_once $pharRoot . 'classes/BookStack/InstanceManager.class.php';
 if (defined('APPLICATION_DEBUG') && APPLICATION_DEBUG) { error_reporting(E_ALL); ini_set('display_errors', 1); }
 date_default_timezone_set(defined('APPLICATION_TIMEZONE') ? APPLICATION_TIMEZONE : 'UTC');
 
