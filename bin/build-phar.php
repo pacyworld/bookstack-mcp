@@ -61,6 +61,7 @@ $stub .= <<<'STUB_PART1'
 define('BOOKSTACK_MCP_PHAR', true);
 Phar::mapPhar('bookstack-mcp.phar');
 $pharRoot = 'phar://bookstack-mcp.phar/';
+define('APPLICATION_LIBDIR', $pharRoot . 'libraries/');
 require_once $pharRoot . 'system/app.conf.php';
 require_once $pharRoot . 'system/autoload.inc.php';
 if (defined('APPLICATION_DEBUG') && APPLICATION_DEBUG) { error_reporting(E_ALL); ini_set('display_errors', 1); }
