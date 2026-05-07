@@ -138,4 +138,27 @@ class ChapterTools
 		$client = $this->manager->getClient($instance ?: null);
 		return $client->delete("chapters/{$id}");
 	}
+
+	/**
+	 * Export a chapter.
+	 */
+	#[McpTool(
+		name: 'bookstack_chapters_export',
+		description: 'Export a chapter to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		inputSchema: [
+			'type' => 'object',
+			'properties' => [
+				'id' => ['type' => 'integer', 'description' => 'ID of the chapter to export'],
+				'format' => ['type' => 'string', 'description' => 'Export format: html, pdf, plaintext, markdown'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+			],
+			'required' => ['id', 'format'],
+		]
+	)]
+	public function bookstack_chapters_export(int $id, string $format = 'markdown', string $instance = ''): string
+	{
+		$client = $this->manager->getClient($instance ?: null);
+		$response = $client->get("chapters/{$id}/export/{$format}");
+		return is_string($response) ? $response : json_encode($response);
+	}
 }
