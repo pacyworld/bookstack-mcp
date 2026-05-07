@@ -111,6 +111,10 @@ Config file is searched in order:
 3. `~/.config/bookstack-mcp/instances.json`
 4. `/usr/local/etc/bookstack-mcp/instances.json`
 
+## Agent Skill
+
+An [agent skill](docs/AGENT_SKILL.md) is included for AI assistants that support progressive skill discovery. Copy it to your skills directory or reference it directly.
+
 ## Requirements
 
 - PHP 8.4+ (with curl extension)

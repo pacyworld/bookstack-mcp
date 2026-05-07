@@ -8,12 +8,15 @@ jobs:
     runs-on: FreeBSD
     steps:
       - name: Checkout
-        run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b ${{ github.ref_name }}
+        run: |
+          git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git .
+          git checkout ${{ github.ref_name }}
 
       - name: Stamp version
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          sed -i '' "s/define('APPLICATION_VERSION', '.*'/define('APPLICATION_VERSION', '${VERSION}'/" system/app.conf.php
+          sed -i "" "s|define('APPLICATION_VERSION', '.*')|define('APPLICATION_VERSION', '${VERSION}')|" system/app.conf.php
+          grep APPLICATION_VERSION system/app.conf.php
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Build PHAR

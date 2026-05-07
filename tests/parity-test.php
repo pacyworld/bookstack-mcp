@@ -14,10 +14,10 @@
 
 $servers = [
     'nodejs' => [
-        'cmd' => 'node /home/admin/Documents/Code/bookstack-mcp-server/dist/server.js',
+        'cmd' => getenv('PARITY_NODEJS_CMD') ?: 'node /home/admin/Documents/Code/bookstack-mcp-server/dist/server.js',
         'env' => [
-            'BOOKSTACK_BASE_URL' => 'https://docs.pacyworld.com/api',
-            'BOOKSTACK_API_TOKEN' => 'dy2qXM6Ory5G0DqndKT9aVNOAkfYNPFB:PvIzIE1YuVBSW7c7EPeThNVwur6iCnO7',
+            'BOOKSTACK_BASE_URL' => getenv('PARITY_BOOKSTACK_URL') ?: 'https://docs.pacyworld.com/api',
+            'BOOKSTACK_API_TOKEN' => getenv('PARITY_BOOKSTACK_TOKEN') ?: die("Set PARITY_BOOKSTACK_TOKEN env var\n"),
             'MCP_TRANSPORT' => 'stdio',
             'LOG_LEVEL' => 'error',
             'NODE_ENV' => 'production',
@@ -26,7 +26,7 @@ $servers = [
     'php' => [
         'cmd' => 'php ' . escapeshellarg(dirname(__DIR__) . '/bin/bookstack-mcp'),
         'env' => [
-            'BOOKSTACK_CONFIG' => dirname(__DIR__) . '/config/instances.json',
+            'BOOKSTACK_CONFIG' => getenv('PARITY_PHP_CONFIG') ?: dirname(__DIR__) . '/config/instances.json',
         ],
     ],
 ];
