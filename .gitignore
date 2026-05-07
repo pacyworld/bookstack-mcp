@@ -1,0 +1,5 @@
+config/instances.json
+temp/
+vendor/
+composer.lock
+*.phar

@@ -1,0 +1,17 @@
+{
+    "default": "securepayment",
+    "instances": {
+        "securepayment": {
+            "url": "https://docs.securepayment.cc",
+            "token_id": "YOUR_TOKEN_ID",
+            "token_secret": "YOUR_TOKEN_SECRET",
+            "description": "SecurePayment Infrastructure Docs"
+        },
+        "pacyworld": {
+            "url": "https://docs.pacyworld.com",
+            "token_id": "YOUR_TOKEN_ID",
+            "token_secret": "YOUR_TOKEN_SECRET",
+            "description": "PacyWorld Documentation"
+        }
+    }
+}
