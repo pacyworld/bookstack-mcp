@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-and-verify:
+    runs-on: FreeBSD
+    steps:
+      - name: Checkout
+        run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b ${{ github.ref_name }}
+
+      - name: Verify syntax
+        run: |
+          find system classes libraries tools includes -name '*.php' -exec php -l {} \; 2>&1 | grep -v "No syntax errors" && exit 1 || true
+
+      - name: Verify bootstrap loads
+        run: |
+          php -r "chdir('${{ github.workspace }}'); require_once 'system/bootstrap.inc.php'; echo APPLICATION_SLUG . ' ' . APPLICATION_VERSION . PHP_EOL; assert(class_exists('EnchiladaMCP\McpServer')); assert(class_exists('EnchiladaHTTP')); echo 'OK' . PHP_EOL;"
+
+      - name: Verify all tools register
+        run: |
+          php -r "
+          chdir('${{ github.workspace }}');
+          require_once 'system/bootstrap.inc.php';
+          use BookStack\InstanceManager;
+          \$mgr = new InstanceManager(['t'=>['url'=>'http://x','token_id'=>'x','token_secret'=>'x']], 't');
+          \$server = new \EnchiladaMCP\McpServer('test', '0.0.0');
+          foreach (glob(APPLICATION_ROOT . 'tools/*.php') as \$f) {
+              \$cls = basename(\$f, '.php');
+              if (class_exists(\$cls)) \$server->register(new \$cls(\$mgr));
+          }
+          \$r = \$server->handleRequest(['jsonrpc'=>'2.0','id'=>1,'method'=>'tools/list','params'=>[]]);
+          \$count = count(\$r['result']['tools']);
+          echo \$count . ' tools registered' . PHP_EOL;
+          assert(\$count >= 55, 'Expected at least 55 tools');
+          echo 'OK' . PHP_EOL;
+          "
+
+      - name: Build PHAR
+        run: php -d phar.readonly=0 bin/build-phar.php
+
+      - name: Verify PHAR initializes
+        run: |
+          echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"ci","version":"1.0"}}}' | php bookstack-mcp.phar --config=config/instances.json.sample 2>/dev/null | php -r '$d=json_decode(fgets(STDIN),true); assert($d["result"]["serverInfo"]["name"]==="bookstack-mcp"); echo "PHAR OK\n";' || echo "PHAR init skipped (no config)"

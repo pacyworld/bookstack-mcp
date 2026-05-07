@@ -1,0 +1,51 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: FreeBSD
+    steps:
+      - name: Checkout
+        run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b ${{ github.ref_name }}
+
+      - name: Stamp version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sed -i '' "s/define('APPLICATION_VERSION', '.*'/define('APPLICATION_VERSION', '${VERSION}'/" system/app.conf.php
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Build PHAR
+        run: php -d phar.readonly=0 bin/build-phar.php
+
+      - name: Verify PHAR
+        run: |
+          php -r "
+          \$phar = new Phar('bookstack-mcp.phar');
+          echo 'Files: ' . \$phar->count() . PHP_EOL;
+          assert(\$phar->count() > 20, 'PHAR should contain 20+ files');
+          echo 'PHAR verified' . PHP_EOL;
+          "
+
+      - name: Create release
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          BODY="BookStack MCP Server ${TAG}\n\n- 58 tools (books, pages, chapters, shelves, search, users, roles, attachments, images, system)\n- Multi-instance support\n- PHAR binary included"
+          curl -s -X POST \
+            -H "Authorization: token ${FORGE_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases" \
+            -d "{\"tag_name\":\"${TAG}\",\"name\":\"${TAG}\",\"body\":\"$(echo -e $BODY)\"}" > /tmp/release.json
+          RELEASE_ID=$(php -r "echo json_decode(file_get_contents('/tmp/release.json'),true)['id'];")
+          echo "RELEASE_ID=${RELEASE_ID}" >> $GITHUB_ENV
+
+      - name: Upload PHAR
+        run: |
+          curl -s -X POST \
+            -H "Authorization: token ${FORGE_TOKEN}" \
+            -F "attachment=@bookstack-mcp.phar" \
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=bookstack-mcp.phar"
+
+    env:
+      FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
