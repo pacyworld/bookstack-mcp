@@ -31,18 +31,26 @@ $servers = [
     ],
 ];
 
-// Read-only tests safe to run on any instance
+// Tests: [tool_name, arguments, description]
+// Assumes test data exists (book ID 4, page ID 5 on pacyworld)
 $tests = [
-    ['bookstack_books_list',       ['count' => 2],              'books list'],
-    ['bookstack_pages_list',       ['count' => 2],              'pages list'],
-    ['bookstack_chapters_list',    ['count' => 2],              'chapters list'],
-    ['bookstack_shelves_list',     ['count' => 2],              'shelves list'],
-    ['bookstack_search',           ['query' => 'a', 'count' => 2], 'search'],
-    ['bookstack_users_list',       ['count' => 2],              'users list'],
-    ['bookstack_roles_list',       ['count' => 2],              'roles list'],
-    ['bookstack_attachments_list', ['count' => 2],              'attachments list'],
-    ['bookstack_images_list',      ['count' => 2],              'images list'],
-    ['bookstack_recyclebin_list',  ['count' => 2],              'recycle bin'],
+    // List operations
+    ['bookstack_books_list',       ['count' => 2],                    'books list'],
+    ['bookstack_pages_list',       ['count' => 2],                    'pages list'],
+    ['bookstack_chapters_list',    ['count' => 2],                    'chapters list'],
+    ['bookstack_shelves_list',     ['count' => 2],                    'shelves list'],
+    ['bookstack_users_list',       ['count' => 2],                    'users list'],
+    ['bookstack_roles_list',       ['count' => 2],                    'roles list'],
+    ['bookstack_attachments_list', ['count' => 2],                    'attachments list'],
+    ['bookstack_images_list',      ['count' => 2],                    'images list'],
+    ['bookstack_recyclebin_list',  ['count' => 2],                    'recycle bin'],
+    // Single read operations
+    ['bookstack_books_read',       ['id' => 4],                       'books read'],
+    ['bookstack_pages_read',       ['id' => 5],                       'pages read'],
+    // Search
+    ['bookstack_search',           ['query' => 'Hello', 'count' => 2],'search'],
+    // System
+    ['bookstack_audit_log',        ['count' => 2],                    'audit log'],
 ];
 
 // --- Helpers ---
@@ -79,17 +87,54 @@ function stopMcp(array $s): void {
     proc_terminate($s['proc']); proc_close($s['proc']);
 }
 
-function structKeys($data, string $prefix = ''): array {
-    if (!is_array($data)) return [];
+function structKeys($data, string $prefix = '', int $depth = 0): array {
+    if (!is_array($data) || $depth > 4) return [];
     $keys = [];
     foreach ($data as $k => $v) {
+        if (is_int($k) && $k > 0) continue; // Only inspect first array element
         $path = $prefix ? "{$prefix}.{$k}" : (string)$k;
         $keys[] = $path;
-        if (is_array($v) && !is_int($k)) {
-            $keys = array_merge($keys, structKeys($v, $path));
+        if (is_array($v)) {
+            $keys = array_merge($keys, structKeys($v, $path, $depth + 1));
         }
     }
     return $keys;
+}
+
+function deepCompare(array $nodeData, array $phpData): array {
+    $issues = [];
+
+    // Top-level key comparison
+    $nodeKeys = structKeys($nodeData);
+    $phpKeys = structKeys($phpData);
+
+    $missingInPhp = array_diff($nodeKeys, $phpKeys);
+    $extraInPhp = array_diff($phpKeys, $nodeKeys);
+
+    foreach ($missingInPhp as $k) $issues[] = "MISSING: {$k}";
+    foreach ($extraInPhp as $k) $issues[] = "EXTRA: {$k}";
+
+    // Type comparison for shared top-level keys
+    foreach ($nodeData as $k => $v) {
+        if (!array_key_exists($k, $phpData)) continue;
+        $nType = gettype($v);
+        $pType = gettype($phpData[$k]);
+        if ($nType !== $pType) {
+            $issues[] = "TYPE: .{$k} (node={$nType}, php={$pType})";
+        }
+    }
+
+    // For list responses, compare first item structure
+    if (isset($nodeData['data'][0]) && isset($phpData['data'][0])) {
+        $nItemKeys = structKeys($nodeData['data'][0], 'data[0]');
+        $pItemKeys = structKeys($phpData['data'][0], 'data[0]');
+        $itemMissing = array_diff($nItemKeys, $pItemKeys);
+        $itemExtra = array_diff($pItemKeys, $nItemKeys);
+        foreach ($itemMissing as $k) $issues[] = "ITEM MISSING: {$k}";
+        foreach ($itemExtra as $k) $issues[] = "ITEM EXTRA: {$k}";
+    }
+
+    return $issues;
 }
 
 // --- Main ---
@@ -132,7 +177,7 @@ if ($extra) { echo "\nEXTRA in PHP:\n"; foreach ($extra as $t) echo "  + {$t}\n"
 
 // Run tool call tests
 echo "\n--- Tool Calls ---\n\n";
-$pass = $fail = 0;
+$pass = $fail = $structDiffs = 0;
 $id = 10;
 
 foreach ($tests as [$tool, $args, $label]) {
@@ -156,16 +201,18 @@ foreach ($tests as [$tool, $args, $label]) {
     echo str_pad($label, 22) . " {$icon}";
 
     if ($nOk && $pOk) {
-        // Compare response structure
+        // Deep structural comparison
         $nData = json_decode($nr['result']['content'][0]['text'] ?? '{}', true) ?? [];
         $pData = json_decode($pr['result']['content'][0]['text'] ?? '{}', true) ?? [];
-        $nKeys = structKeys($nData);
-        $pKeys = structKeys($pData);
-        $keyDiff = array_diff($nKeys, $pKeys);
-        if (!empty($keyDiff)) {
-            echo "  (missing keys: " . implode(', ', array_slice($keyDiff, 0, 3)) . ")";
+        $issues = deepCompare($nData, $pData);
+        if (empty($issues)) {
+            echo "  (structure match)";
+            $pass++;
+        } else {
+            echo "\n";
+            foreach ($issues as $issue) echo "      {$issue}\n";
+            $structDiffs++;
         }
-        $pass++;
     } else {
         if (!$pOk && $pr) {
             $err = $pr['result']['content'][0]['text'] ?? $pr['error']['message'] ?? '?';
@@ -180,5 +227,5 @@ foreach ($tests as [$tool, $args, $label]) {
 foreach ($procs as $s) stopMcp($s);
 
 echo "\n=========================\n";
-echo "Results: {$pass} pass, {$fail} regressions, " . count($missing) . " missing tools\n";
-exit($fail > 0 ? 1 : 0);
+echo "Results: {$pass} match, {$structDiffs} struct diffs, {$fail} regressions, " . count($missing) . " missing tools\n";
+exit(($fail > 0 || $structDiffs > 0) ? 1 : 0);
