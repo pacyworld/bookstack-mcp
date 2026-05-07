@@ -10,40 +10,18 @@ A pure PHP Model Context Protocol server for managing multiple [BookStack](https
 - **Single PHAR binary** — no dependencies, no Composer, no Node.js
 - Built on the [EnchiladaMCP](https://buenapp.org/docs/enchilada-mcp) library
 
-## Installation (PHAR — recommended)
+## Installation
 
 ```sh
-# Download the latest PHAR
-curl -LO https://pacyworld.dev/pacyworld/bookstack-mcp/releases/latest/download/bookstack-mcp.phar
-chmod +x bookstack-mcp.phar
-
-# Create configuration
-mkdir -p ~/.config/bookstack-mcp
-cat > ~/.config/bookstack-mcp/instances.json << 'EOF'
-{
-    "default": "my-wiki",
-    "instances": {
-        "my-wiki": {
-            "url": "https://your-bookstack.example.com",
-            "token_id": "YOUR_TOKEN_ID",
-            "token_secret": "YOUR_TOKEN_SECRET",
-            "description": "My BookStack Wiki"
-        }
-    }
-}
-EOF
-
-# Test
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | php bookstack-mcp.phar
-```
-
-## Installation (from source)
-
-```sh
+# Clone the repository
 git clone https://pacyworld.dev/pacyworld/bookstack-mcp.git
 cd bookstack-mcp
+
+# Create configuration
 cp config/instances.json.sample config/instances.json
-# Edit config/instances.json with your credentials
+# Edit config/instances.json with your BookStack URL and API tokens
+
+# Test
 php bin/bookstack-mcp
 ```
 
@@ -57,9 +35,9 @@ Add to your MCP config (`~/.codeium/windsurf/mcp_config.json`):
 {
     "bookstack": {
         "command": "php",
-        "args": ["/path/to/bookstack-mcp.phar"],
+        "args": ["/path/to/bookstack-mcp/bin/bookstack-mcp"],
         "env": {
-            "BOOKSTACK_CONFIG": "/home/you/.config/bookstack-mcp/instances.json"
+            "BOOKSTACK_CONFIG": "/path/to/bookstack-mcp/config/instances.json"
         }
     }
 }
@@ -72,9 +50,9 @@ Add to your MCP config (`~/.codeium/windsurf/mcp_config.json`):
     "mcpServers": {
         "bookstack": {
             "command": "php",
-            "args": ["/path/to/bookstack-mcp.phar"],
+            "args": ["/path/to/bookstack-mcp/bin/bookstack-mcp"],
             "env": {
-                "BOOKSTACK_CONFIG": "/home/you/.config/bookstack-mcp/instances.json"
+                "BOOKSTACK_CONFIG": "/path/to/bookstack-mcp/config/instances.json"
             }
         }
     }
