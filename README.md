@@ -10,18 +10,46 @@ A pure PHP Model Context Protocol server for managing multiple [BookStack](https
 - **Single PHAR binary** — no dependencies, no Composer, no Node.js
 - Built on the [EnchiladaMCP](https://buenapp.org/docs/enchilada-mcp) library
 
-## Installation
+## Installation (PHAR)
+
+Download the latest PHAR from [Releases](https://pacyworld.dev/pacyworld/bookstack-mcp/releases):
 
 ```sh
-# Clone the repository
+curl -LO https://pacyworld.dev/pacyworld/bookstack-mcp/releases/latest/download/bookstack-mcp.phar
+chmod +x bookstack-mcp.phar
+```
+
+Create a config file:
+
+```sh
+mkdir -p ~/.config/bookstack-mcp
+cat > ~/.config/bookstack-mcp/instances.json << 'EOF'
+{
+    "default": "my-wiki",
+    "instances": {
+        "my-wiki": {
+            "url": "https://wiki.example.com",
+            "token_id": "YOUR_TOKEN_ID",
+            "token_secret": "YOUR_TOKEN_SECRET"
+        }
+    }
+}
+EOF
+```
+
+Test:
+
+```sh
+php bookstack-mcp.phar
+```
+
+### From Source
+
+```sh
 git clone https://pacyworld.dev/pacyworld/bookstack-mcp.git
 cd bookstack-mcp
-
-# Create configuration
 cp config/instances.json.sample config/instances.json
 # Edit config/instances.json with your BookStack URL and API tokens
-
-# Test
 php bin/bookstack-mcp
 ```
 
@@ -35,10 +63,18 @@ Add to your MCP config (`~/.codeium/windsurf/mcp_config.json`):
 {
     "bookstack": {
         "command": "php",
-        "args": ["/path/to/bookstack-mcp/bin/bookstack-mcp"],
-        "env": {
-            "BOOKSTACK_CONFIG": "/path/to/bookstack-mcp/config/instances.json"
-        }
+        "args": ["/path/to/bookstack-mcp.phar"]
+    }
+}
+```
+
+To use a config file in a non-default location:
+
+```json
+{
+    "bookstack": {
+        "command": "php",
+        "args": ["/path/to/bookstack-mcp.phar", "--config=/path/to/instances.json"]
     }
 }
 ```
@@ -50,10 +86,7 @@ Add to your MCP config (`~/.codeium/windsurf/mcp_config.json`):
     "mcpServers": {
         "bookstack": {
             "command": "php",
-            "args": ["/path/to/bookstack-mcp/bin/bookstack-mcp"],
-            "env": {
-                "BOOKSTACK_CONFIG": "/path/to/bookstack-mcp/config/instances.json"
-            }
+            "args": ["/path/to/bookstack-mcp.phar"]
         }
     }
 }
@@ -95,7 +128,7 @@ An [agent skill](docs/AGENT_SKILL.md) is included for AI assistants that support
 
 ## Requirements
 
-- PHP 8.4+ (with curl extension)
+- PHP 8.4+ with `curl` and `phar` extensions
 - BookStack instance(s) with API access enabled
 
 ## License
