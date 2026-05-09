@@ -10,6 +10,11 @@ A pure PHP Model Context Protocol server for managing multiple [BookStack](https
 - **Single PHAR binary** — no dependencies, no Composer, no Node.js
 - Built on the [EnchiladaMCP](https://buenapp.org/docs/enchilada-mcp) library
 
+## Requirements
+
+- **PHP 8.4+** with `curl` and `phar` extensions
+- BookStack instance(s) with API access enabled
+
 ## Installation (PHAR)
 
 Download the latest PHAR from [Releases](https://pacyworld.dev/pacyworld/bookstack-mcp/releases):
@@ -124,12 +129,11 @@ Config file is searched in order:
 
 ## Agent Skill
 
-An [agent skill](docs/AGENT_SKILL.md) is included for AI assistants that support progressive skill discovery. Copy it to your skills directory or reference it directly.
+For AI-assisted setup, point your AI agent to the [setup skill](https://pacyworld.dev/pacyworld/bookstack-mcp/raw/branch/master/docs/AGENT_SKILL.md).
 
-## Requirements
+## Documentation
 
-- PHP 8.4+ with `curl` and `phar` extensions
-- BookStack instance(s) with API access enabled
+- [docs/AGENT_SKILL.md](docs/AGENT_SKILL.md) — Agent skill for AI-assisted installation
 
 ## License
 
