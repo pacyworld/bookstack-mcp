@@ -23,6 +23,7 @@ class ImageTools
 	#[McpTool(
 		name: 'bookstack_images_list',
 		description: 'List all images in the gallery.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -42,6 +43,7 @@ class ImageTools
 	#[McpTool(
 		name: 'bookstack_images_read',
 		description: 'Get details of a specific image, including its display URL and thumbnail URLs.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

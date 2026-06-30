@@ -23,6 +23,7 @@ class AttachmentTools
 	#[McpTool(
 		name: 'bookstack_attachments_list',
 		description: 'List all attachments visible to the authenticated user.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -41,6 +42,7 @@ class AttachmentTools
 	#[McpTool(
 		name: 'bookstack_attachments_read',
 		description: 'Get details of a specific attachment, including its download URL.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

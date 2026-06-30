@@ -26,6 +26,7 @@ class BookTools
 	#[McpTool(
 		name: 'bookstack_books_list',
 		description: 'List all books visible to the authenticated user. Books are the top-level containers in BookStack.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -48,6 +49,7 @@ class BookTools
 	#[McpTool(
 		name: 'bookstack_books_read',
 		description: 'Get details of a specific book including its complete content hierarchy (chapters and pages). Use this to explore what is inside a book.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -142,6 +144,7 @@ class BookTools
 	#[McpTool(
 		name: 'bookstack_books_export',
 		description: 'Export a book to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

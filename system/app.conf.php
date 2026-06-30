@@ -6,7 +6,7 @@
 
 define('APPLICATION_NAME', 'BookStack MCP');
 define('APPLICATION_SLUG', 'bookstack-mcp');
-define('APPLICATION_VERSION', '0.2.0');
+define('APPLICATION_VERSION', '0.2.1');
 define('APPLICATION_WEBSITE', 'https://pacyworld.dev/pacyworld/bookstack-mcp');
 
 define('APPLICATION_ROOT', dirname(__DIR__) . DIRECTORY_SEPARATOR);

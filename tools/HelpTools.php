@@ -23,6 +23,7 @@ class HelpTools
 	#[McpTool(
 		name: 'bookstack_server_info',
 		description: 'Get information about this BookStack MCP server including version, capabilities, and configured instances.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => new \stdClass(),
@@ -50,6 +51,7 @@ class HelpTools
 	#[McpTool(
 		name: 'bookstack_help',
 		description: 'Get context-aware help on how to use BookStack MCP tools.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -127,6 +129,7 @@ class HelpTools
 	#[McpTool(
 		name: 'bookstack_error_guide',
 		description: 'Get information about common error codes and how to resolve them.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -170,6 +173,7 @@ class HelpTools
 	#[McpTool(
 		name: 'bookstack_tool_categories',
 		description: 'Get a list of tool categories and their descriptions.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -236,6 +240,7 @@ class HelpTools
 	#[McpTool(
 		name: 'bookstack_usage_examples',
 		description: 'Get common workflow examples for BookStack operations.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

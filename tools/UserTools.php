@@ -23,6 +23,7 @@ class UserTools
 	#[McpTool(
 		name: 'bookstack_users_list',
 		description: 'List all users.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -42,6 +43,7 @@ class UserTools
 	#[McpTool(
 		name: 'bookstack_users_read',
 		description: 'Get details of a specific user, including their assigned roles.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
