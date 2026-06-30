@@ -26,6 +26,7 @@ class ChapterTools
 	#[McpTool(
 		name: 'bookstack_chapters_list',
 		description: 'List all chapters visible to the authenticated user.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -48,6 +49,7 @@ class ChapterTools
 	#[McpTool(
 		name: 'bookstack_chapters_read',
 		description: 'Get details of a specific chapter, including a list of pages contained within it.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -145,6 +147,7 @@ class ChapterTools
 	#[McpTool(
 		name: 'bookstack_chapters_export',
 		description: 'Export a chapter to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

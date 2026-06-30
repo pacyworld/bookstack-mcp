@@ -26,6 +26,7 @@ class InstanceTools
 	#[McpTool(
 		name: 'bookstack_list_instances',
 		description: 'List all configured BookStack instances. Shows which instance is the current default.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => new \stdClass(),

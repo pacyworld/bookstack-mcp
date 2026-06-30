@@ -23,6 +23,7 @@ class SystemTools
 	#[McpTool(
 		name: 'bookstack_system_info',
 		description: 'Get BookStack instance information including version, base URL, and app name.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -39,6 +40,7 @@ class SystemTools
 	#[McpTool(
 		name: 'bookstack_audit_log',
 		description: 'Retrieve the audit log to see recent activities on the instance.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -57,6 +59,7 @@ class SystemTools
 	#[McpTool(
 		name: 'bookstack_permissions_read',
 		description: 'Check permissions for a specific content item (book, chapter, page, or shelf).',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

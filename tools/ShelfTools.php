@@ -23,6 +23,7 @@ class ShelfTools
 	#[McpTool(
 		name: 'bookstack_shelves_list',
 		description: 'List all bookshelves. Shelves organize books into collections.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -42,6 +43,7 @@ class ShelfTools
 	#[McpTool(
 		name: 'bookstack_shelves_read',
 		description: 'Get details of a specific bookshelf, including the list of books assigned to it.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

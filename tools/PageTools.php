@@ -26,6 +26,7 @@ class PageTools
 	#[McpTool(
 		name: 'bookstack_pages_list',
 		description: 'List all pages visible to the authenticated user with pagination and filtering.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -48,6 +49,7 @@ class PageTools
 	#[McpTool(
 		name: 'bookstack_pages_read',
 		description: 'Get the full details and content of a page. Includes raw HTML and Markdown content.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -148,6 +150,7 @@ class PageTools
 	#[McpTool(
 		name: 'bookstack_pages_export',
 		description: 'Export a page to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

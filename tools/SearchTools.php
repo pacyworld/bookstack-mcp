@@ -26,6 +26,7 @@ class SearchTools
 	#[McpTool(
 		name: 'bookstack_search',
 		description: 'Search across all BookStack content. Supports advanced syntax: "exact phrase", {type:page|book|chapter|shelf}, {tag:name=value}, {created_by:me}. Page results contain snippets only — use bookstack_pages_read for full content.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

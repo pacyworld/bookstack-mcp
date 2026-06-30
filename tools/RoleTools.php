@@ -23,6 +23,7 @@ class RoleTools
 	#[McpTool(
 		name: 'bookstack_roles_list',
 		description: 'List all user roles. Roles define what actions users can perform.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
@@ -41,6 +42,7 @@ class RoleTools
 	#[McpTool(
 		name: 'bookstack_roles_read',
 		description: 'Get details of a specific role, including its permissions.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [

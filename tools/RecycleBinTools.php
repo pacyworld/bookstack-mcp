@@ -23,6 +23,7 @@ class RecycleBinTools
 	#[McpTool(
 		name: 'bookstack_recyclebin_list',
 		description: 'List items currently in the recycle bin. Use to find deletion_id for restoration.',
+		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
