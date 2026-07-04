@@ -163,6 +163,40 @@ class StdioTransport
 	}
 
 	/**
+	 * Send a JSON-RPC notification to the client (no id, no response expected).
+	 *
+	 * @param string              $method Notification method name
+	 * @param array<string,mixed> $params Notification parameters
+	 */
+	public function sendNotification(string $method, array $params = []): void
+	{
+		$msg = ['jsonrpc' => '2.0', 'method' => $method];
+		if (!empty($params)) {
+			$msg['params'] = $params;
+		}
+		$output = json_encode($msg, JSON_UNESCAPED_SLASHES);
+		$this->log("Notification: " . substr($output, 0, 200));
+		fwrite(STDOUT, $output . "\n");
+		fflush(STDOUT);
+	}
+
+	/**
+	 * Send a log message notification to the client.
+	 *
+	 * @param string $level   Log level: debug, info, notice, warning, error, critical, alert, emergency
+	 * @param string $message Log message text
+	 * @param string $logger  Optional logger name
+	 */
+	public function sendLogMessage(string $level, string $message, string $logger = ''): void
+	{
+		$params = ['level' => $level, 'message' => $message];
+		if (!empty($logger)) {
+			$params['logger'] = $logger;
+		}
+		$this->sendNotification('notifications/message', $params);
+	}
+
+	/**
 	 * Stop the event loop.
 	 */
 	public function stop(): void
@@ -195,10 +229,32 @@ class StdioTransport
 			return;
 		}
 
-		$response = $this->server->handleRequest($request);
+		// Defense-in-depth: McpServer::handleRequest() already catches \Throwable
+		// internally and converts failures to JSON-RPC/tool error responses. This
+		// outer guard exists so that a future change to McpServer, or any error
+		// occurring outside that guarded region (e.g. response serialization),
+		// can never take down the whole transport for every session sharing it.
+		try {
+			$response = $this->server->handleRequest($request);
+		} catch (\Throwable $e) {
+			$this->log("Unhandled exception in handleRequest: " . $e->getMessage());
+			$id = $request['id'] ?? null;
+			$response = [
+				'jsonrpc' => '2.0',
+				'id' => $id,
+				'error' => [
+					'code' => -32603,
+					'message' => 'Internal error: ' . $e->getMessage(),
+				],
+			];
+		}
 
 		if (!empty($response)) {
 			$output = json_encode($response, JSON_UNESCAPED_SLASHES);
+			if ($output === false) {
+				$this->log("Failed to encode response: " . json_last_error_msg());
+				return;
+			}
 			$this->log("Sending: " . substr($output, 0, 200) . (strlen($output) > 200 ? '...' : ''));
 			fwrite(STDOUT, $output . "\n");
 			fflush(STDOUT);
