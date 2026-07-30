@@ -35,8 +35,7 @@ class HelpTools
 			'name' => APPLICATION_NAME,
 			'version' => APPLICATION_VERSION,
 			'instances' => $this->manager->listInstances(),
-			'default_instance' => $this->manager->getDefault(),
-			'tool_count' => 58,
+			'tool_count' => 57,
 			'categories' => [
 				'content' => 'books, pages, chapters, shelves — CRUD + export',
 				'media' => 'attachments, images — manage file assets',
@@ -106,10 +105,9 @@ class HelpTools
 				'title' => 'Multi-Instance Management',
 				'steps' => [
 					'Use bookstack_list_instances to see all configured instances',
-					'Use bookstack_switch_instance to change the default',
-					'Or pass instance parameter to any tool for one-off operations',
+					'Pass instance parameter to every tool call — it is required',
 				],
-				'tip' => 'The instance parameter is optional on all tools. Omit it to use the current default.',
+				'tip' => 'The instance parameter is required on all tools. There is no default instance.',
 			],
 			'best_practices' => [
 				'title' => 'Best Practices',
@@ -222,7 +220,7 @@ class HelpTools
 			],
 			'system' => [
 				'description' => 'System info, audit log, permissions, recycle bin, instance management',
-				'tools' => ['bookstack_system_info', 'bookstack_audit_log', 'bookstack_permissions_read', 'bookstack_permissions_update', 'bookstack_recyclebin_list', 'bookstack_recyclebin_restore', 'bookstack_recyclebin_destroy', 'bookstack_list_instances', 'bookstack_switch_instance'],
+				'tools' => ['bookstack_system_info', 'bookstack_audit_log', 'bookstack_permissions_read', 'bookstack_permissions_update', 'bookstack_recyclebin_list', 'bookstack_recyclebin_restore', 'bookstack_recyclebin_destroy', 'bookstack_list_instances'],
 			],
 		];
 

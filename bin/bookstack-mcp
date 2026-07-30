@@ -73,12 +73,12 @@ try {
 }
 
 $instanceCount = $manager->count();
-debug("Loaded {$instanceCount} instance(s) from {$configPath} (default: {$manager->getDefault()})");
+debug("Loaded {$instanceCount} instance(s) from {$configPath}");
 
 // --- Create MCP Server ---
 
 $server = new McpServer(APPLICATION_SLUG, APPLICATION_VERSION);
-$server->setInstructions('BookStack wiki management. Use bookstack_list_instances to see configured instances. All tools accept an optional instance parameter.');
+$server->setInstructions('BookStack wiki management. Use bookstack_list_instances to see configured instances. The instance parameter is required on all tool calls.');
 
 // Register tools
 $toolDir = APPLICATION_ROOT . 'tools';

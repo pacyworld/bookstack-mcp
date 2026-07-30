@@ -33,13 +33,13 @@ class PageTools
 				'count' => ['type' => 'integer', 'description' => 'Number of pages to return (default 20, max 500)'],
 				'offset' => ['type' => 'integer', 'description' => 'Number of pages to skip for pagination'],
 				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
 		]
 	)]
 	public function bookstack_pages_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get('pages', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
 	}
 
@@ -54,14 +54,14 @@ class PageTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'The unique ID of the page'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_pages_read(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get("pages/{$id}");
 	}
 
@@ -79,14 +79,14 @@ class PageTools
 				'chapter_id' => ['type' => 'integer', 'description' => 'Parent chapter ID (required if book_id not provided)'],
 				'markdown' => ['type' => 'string', 'description' => 'Page content in Markdown (preferred for LLM generation)'],
 				'html' => ['type' => 'string', 'description' => 'Page content in HTML (use this OR markdown, not both)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['name'],
+			'required' => ['name', 'instance'],
 		]
 	)]
 	public function bookstack_pages_create(string $name, int $book_id = 0, int $chapter_id = 0, string $markdown = '', string $html = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name];
 		if ($book_id > 0) $data['book_id'] = $book_id;
 		if ($chapter_id > 0) $data['chapter_id'] = $chapter_id;
@@ -108,14 +108,14 @@ class PageTools
 				'name' => ['type' => 'string', 'description' => 'New page name'],
 				'markdown' => ['type' => 'string', 'description' => 'New Markdown content (replaces existing)'],
 				'html' => ['type' => 'string', 'description' => 'New HTML content (replaces existing)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_pages_update(int $id, string $name = '', string $markdown = '', string $html = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($markdown)) $data['markdown'] = $markdown;
@@ -133,14 +133,14 @@ class PageTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the page to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_pages_delete(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->delete("pages/{$id}");
 	}
 
@@ -156,14 +156,14 @@ class PageTools
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the page to export'],
 				'format' => ['type' => 'string', 'description' => 'Export format: html, pdf, plaintext, markdown'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id', 'format'],
+			'required' => ['id', 'format', 'instance'],
 		]
 	)]
 	public function bookstack_pages_export(int $id, string $format = 'markdown', string $instance = ''): string
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$response = $client->get("pages/{$id}/export/{$format}");
 		return is_string($response) ? $response : json_encode($response);
 	}

@@ -30,13 +30,13 @@ class ImageTools
 				'count' => ['type' => 'integer', 'description' => 'Number of images to return (default 20, max 500)'],
 				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
 				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
 		]
 	)]
 	public function bookstack_images_list(int $count = 20, int $offset = 0, string $sort = 'created_at', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get('image-gallery', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
 	}
 
@@ -48,14 +48,14 @@ class ImageTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'The unique ID of the image'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_images_read(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get("image-gallery/{$id}");
 	}
 
@@ -69,14 +69,14 @@ class ImageTools
 				'image' => ['type' => 'string', 'description' => 'Base64 encoded image content'],
 				'uploaded_to' => ['type' => 'integer', 'description' => 'Page ID this image is associated with'],
 				'type' => ['type' => 'string', 'description' => 'Image type: gallery (default) or drawio'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['name', 'image'],
+			'required' => ['name', 'image', 'instance'],
 		]
 	)]
 	public function bookstack_images_create(string $name, string $image, int $uploaded_to = 0, string $type = 'gallery', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name, 'image' => $image, 'type' => $type];
 		if ($uploaded_to > 0) $data['uploaded_to'] = $uploaded_to;
 		return $client->post('image-gallery', $data);
@@ -90,14 +90,14 @@ class ImageTools
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the image to update'],
 				'name' => ['type' => 'string', 'description' => 'New title'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_images_update(int $id, string $name = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		return $client->put("image-gallery/{$id}", $data);
@@ -110,14 +110,14 @@ class ImageTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the image to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_images_delete(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->delete("image-gallery/{$id}");
 	}
 }

@@ -29,13 +29,14 @@ class RecycleBinTools
 			'properties' => [
 				'count' => ['type' => 'integer', 'description' => 'Number of items to return (default 20, max 500)'],
 				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
+			'required' => ['instance'],
 		]
 	)]
 	public function bookstack_recyclebin_list(int $count = 20, int $offset = 0, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get('recycle-bin', ['count' => min($count, 500), 'offset' => $offset]);
 	}
 
@@ -46,14 +47,14 @@ class RecycleBinTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'The deletion_id of the item to restore (from recyclebin_list, NOT the original entity ID)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_recyclebin_restore(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->put("recycle-bin/{$id}");
 	}
 
@@ -64,14 +65,14 @@ class RecycleBinTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'The deletion_id of the item to permanently destroy'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_recyclebin_destroy(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->delete("recycle-bin/{$id}");
 	}
 }

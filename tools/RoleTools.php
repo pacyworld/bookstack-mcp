@@ -29,13 +29,13 @@ class RoleTools
 			'properties' => [
 				'count' => ['type' => 'integer', 'description' => 'Number of roles to return (default 20, max 500)'],
 				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
 		]
 	)]
 	public function bookstack_roles_list(int $count = 20, int $offset = 0, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get('roles', ['count' => min($count, 500), 'offset' => $offset]);
 	}
 
@@ -47,14 +47,14 @@ class RoleTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the role'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_roles_read(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get("roles/{$id}");
 	}
 
@@ -66,14 +66,14 @@ class RoleTools
 			'properties' => [
 				'display_name' => ['type' => 'string', 'description' => 'Name of the role'],
 				'description' => ['type' => 'string', 'description' => 'Short description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['display_name'],
+			'required' => ['display_name', 'instance'],
 		]
 	)]
 	public function bookstack_roles_create(string $display_name, string $description = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = ['display_name' => $display_name];
 		if (!empty($description)) $data['description'] = $description;
 		return $client->post('roles', $data);
@@ -88,14 +88,14 @@ class RoleTools
 				'id' => ['type' => 'integer', 'description' => 'ID of the role to update'],
 				'display_name' => ['type' => 'string', 'description' => 'New display name'],
 				'description' => ['type' => 'string', 'description' => 'New description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_roles_update(int $id, string $display_name = '', string $description = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($display_name)) $data['display_name'] = $display_name;
 		if (!empty($description)) $data['description'] = $description;
@@ -110,14 +110,14 @@ class RoleTools
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the role to delete'],
 				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'ID of another role to move assigned users to'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_roles_delete(int $id, int $migrate_ownership_id = 0, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$path = "roles/{$id}";
 		if ($migrate_ownership_id > 0) {
 			$path .= "?migrate_ownership_id={$migrate_ownership_id}";

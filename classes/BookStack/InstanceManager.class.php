@@ -29,14 +29,10 @@ class InstanceManager
 	 * @param array<string,array> $instances Instance configurations
 	 * @param string              $default   Default instance name
 	 */
-	public function __construct(array $instances, string $default)
+	public function __construct(array $instances, string $default = '')
 	{
 		if (empty($instances)) {
 			throw new \InvalidArgumentException('At least one instance must be configured.');
-		}
-
-		if (!isset($instances[$default])) {
-			throw new \InvalidArgumentException("Default instance '{$default}' not found in configuration.");
 		}
 
 		$this->instances = $instances;
@@ -71,26 +67,24 @@ class InstanceManager
 		$instances = $config['instances'] ?? [];
 		$default = $config['default'] ?? '';
 
-		if (empty($default) && !empty($instances)) {
-			$default = array_key_first($instances);
-		}
-
 		return new self($instances, $default);
 	}
 
 	/**
-	 * Get a Client for the named instance (or default).
+	 * Get a Client for the named instance.
 	 *
 	 * Clients are cached — the same Client instance is returned
 	 * for repeated calls with the same name.
 	 *
-	 * @param  string|null $name Instance name (null = default)
+	 * @param  string $name Instance name (required)
 	 * @return Client             BookStack API client
-	 * @throws \InvalidArgumentException If instance not found
+	 * @throws \InvalidArgumentException If instance not found or empty
 	 */
-	public function getClient(?string $name = null): Client
+	public function getClient(string $name): Client
 	{
-		$name = $name ?: $this->default;
+		if (empty($name)) {
+			throw new \InvalidArgumentException('Instance name is required. Pass the instance parameter to every tool call.');
+		}
 
 		if (!isset($this->instances[$name])) {
 			$available = implode(', ', array_keys($this->instances));
@@ -124,7 +118,7 @@ class InstanceManager
 	/**
 	 * List all configured instances.
 	 *
-	 * @return array<string,array{url:string,description:string,is_default:bool}>
+	 * @return array<string,array{url:string,description:string}>
 	 */
 	public function listInstances(): array
 	{
@@ -133,7 +127,6 @@ class InstanceManager
 			$result[$name] = [
 				'url' => $config['url'] ?? '',
 				'description' => $config['description'] ?? '',
-				'is_default' => ($name === $this->default),
 			];
 		}
 		return $result;

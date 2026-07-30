@@ -33,14 +33,14 @@ class SearchTools
 				'query' => ['type' => 'string', 'description' => 'Search query string with optional advanced syntax'],
 				'count' => ['type' => 'integer', 'description' => 'Results per page (default 20, max 100)'],
 				'page' => ['type' => 'integer', 'description' => 'Page number for pagination (default 1)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional, uses default)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['query'],
+			'required' => ['query', 'instance'],
 		]
 	)]
 	public function bookstack_search(string $query, int $count = 20, int $page = 1, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 
 		$params = ['query' => $query, 'count' => min($count, 100), 'page' => max($page, 1)];
 		return $client->get('search', $params);

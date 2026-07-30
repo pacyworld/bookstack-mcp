@@ -33,13 +33,13 @@ class BookTools
 				'count' => ['type' => 'integer', 'description' => 'Number of books to return (default 20, max 500)'],
 				'offset' => ['type' => 'integer', 'description' => 'Number of books to skip for pagination'],
 				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
 		]
 	)]
 	public function bookstack_books_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get('books', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
 	}
 
@@ -54,14 +54,14 @@ class BookTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'The unique ID of the book'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_books_read(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->get("books/{$id}");
 	}
 
@@ -76,14 +76,14 @@ class BookTools
 			'properties' => [
 				'name' => ['type' => 'string', 'description' => 'The name of the book'],
 				'description' => ['type' => 'string', 'description' => 'Plain text description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['name'],
+			'required' => ['name', 'instance'],
 		]
 	)]
 	public function bookstack_books_create(string $name, string $description = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name];
 		if (!empty($description)) {
 			$data['description'] = $description;
@@ -103,14 +103,14 @@ class BookTools
 				'id' => ['type' => 'integer', 'description' => 'ID of the book to update'],
 				'name' => ['type' => 'string', 'description' => 'New book name'],
 				'description' => ['type' => 'string', 'description' => 'New description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_books_update(int $id, string $name = '', string $description = '', string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($description)) $data['description'] = $description;
@@ -127,14 +127,14 @@ class BookTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the book to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id'],
+			'required' => ['id', 'instance'],
 		]
 	)]
 	public function bookstack_books_delete(int $id, string $instance = ''): array
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		return $client->delete("books/{$id}");
 	}
 
@@ -150,14 +150,14 @@ class BookTools
 			'properties' => [
 				'id' => ['type' => 'integer', 'description' => 'ID of the book to export'],
 				'format' => ['type' => 'string', 'description' => 'Export format: html, pdf, plaintext, markdown'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name (optional)'],
+				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
 			],
-			'required' => ['id', 'format'],
+			'required' => ['id', 'format', 'instance'],
 		]
 	)]
 	public function bookstack_books_export(int $id, string $format = 'markdown', string $instance = ''): string
 	{
-		$client = $this->manager->getClient($instance ?: null);
+		$client = $this->manager->getClient($instance);
 		$response = $client->get("books/{$id}/export/{$format}");
 		return is_string($response) ? $response : json_encode($response);
 	}

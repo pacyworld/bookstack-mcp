@@ -25,7 +25,7 @@ class InstanceTools
 	 */
 	#[McpTool(
 		name: 'bookstack_list_instances',
-		description: 'List all configured BookStack instances. Shows which instance is the current default.',
+		description: 'List all configured BookStack instances.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -35,35 +35,8 @@ class InstanceTools
 	public function bookstack_list_instances(): array
 	{
 		return [
-			'default' => $this->manager->getDefault(),
 			'instances' => $this->manager->listInstances(),
 			'count' => $this->manager->count(),
-		];
-	}
-
-	/**
-	 * Switch the active default BookStack instance.
-	 */
-	#[McpTool(
-		name: 'bookstack_switch_instance',
-		description: 'Switch the active default BookStack instance. All subsequent tool calls without an explicit instance parameter will use this instance.',
-		inputSchema: [
-			'type' => 'object',
-			'properties' => [
-				'instance' => ['type' => 'string', 'description' => 'Name of the instance to set as default (from bookstack_list_instances)'],
-			],
-			'required' => ['instance'],
-		]
-	)]
-	public function bookstack_switch_instance(string $instance): array
-	{
-		$previous = $this->manager->getDefault();
-		$this->manager->setDefault($instance);
-
-		return [
-			'success' => true,
-			'previous_default' => $previous,
-			'current_default' => $instance,
 		];
 	}
 }
