@@ -5,6 +5,7 @@ A pure PHP Model Context Protocol server for managing multiple [BookStack](https
 ## Features
 
 - **58 tools** — books, pages, chapters, shelves, search, attachments, images, users, roles, permissions, audit log, recycle bin
+- **Markdown output** — read/list/search tools return compact, token-efficient Markdown with noise fields stripped and explicit pagination hints
 - **Multi-instance** — manage multiple BookStack instances from a single server
 - **Token authentication** — uses BookStack API token ID/secret pairs
 - **Single PHAR binary** — no dependencies, no Composer, no Node.js
@@ -126,6 +127,17 @@ Config file is searched in order:
 2. `--config=/path/to/instances.json` CLI argument
 3. `~/.config/bookstack-mcp/instances.json`
 4. `/usr/local/etc/bookstack-mcp/instances.json`
+
+## Output Format
+
+Read, list, and search tools return Markdown instead of raw JSON API responses:
+
+- **Lists** — one line per item (`- [12] **Name** — description (updated 2026-05-31)`) with a `More results: call bookstack_*_list with offset=N` footer when additional results exist
+- **Search** — `## Title [page, id: 66]` sections with book › chapter breadcrumbs, `**highlighted**` snippets, and a `page=N+1` footer
+- **Pages** — Markdown body with a metadata header; the redundant HTML representation is omitted (available via `bookstack_pages_export format=html`). Pages authored in HTML return their HTML body with a plaintext export hint
+- **Books/chapters/shelves** — metadata header plus an indented content hierarchy
+
+Create/update/delete tools continue to return the raw JSON API response.
 
 ## Agent Skill
 

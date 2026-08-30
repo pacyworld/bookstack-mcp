@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class ImageTools
 {
@@ -34,10 +35,11 @@ class ImageTools
 			],
 		]
 	)]
-	public function bookstack_images_list(int $count = 20, int $offset = 0, string $sort = 'created_at', string $instance = ''): array
+	public function bookstack_images_list(int $count = 20, int $offset = 0, string $sort = 'created_at', string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('image-gallery', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		$response = $client->get('image-gallery', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		return ResponseFormatter::imagesList($response, $offset, $sort);
 	}
 
 	#[McpTool(
@@ -53,10 +55,10 @@ class ImageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_images_read(int $id, string $instance = ''): array
+	public function bookstack_images_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("image-gallery/{$id}");
+		return ResponseFormatter::imageDetail($client->get("image-gallery/{$id}"));
 	}
 
 	#[McpTool(

@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class RoleTools
 {
@@ -33,10 +34,11 @@ class RoleTools
 			],
 		]
 	)]
-	public function bookstack_roles_list(int $count = 20, int $offset = 0, string $instance = ''): array
+	public function bookstack_roles_list(int $count = 20, int $offset = 0, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('roles', ['count' => min($count, 500), 'offset' => $offset]);
+		$response = $client->get('roles', ['count' => min($count, 500), 'offset' => $offset]);
+		return ResponseFormatter::rolesList($response, $offset);
 	}
 
 	#[McpTool(
@@ -52,10 +54,10 @@ class RoleTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_roles_read(int $id, string $instance = ''): array
+	public function bookstack_roles_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("roles/{$id}");
+		return ResponseFormatter::roleDetail($client->get("roles/{$id}"));
 	}
 
 	#[McpTool(

@@ -201,9 +201,19 @@ foreach ($tests as [$tool, $args, $label]) {
     echo str_pad($label, 22) . " {$icon}";
 
     if ($nOk && $pOk) {
-        // Deep structural comparison
+        // Deep structural comparison. The PHP server intentionally returns
+        // Markdown for read/list/search tools (v0.3.0+) instead of raw JSON;
+        // non-JSON responses skip structural comparison — success/failure
+        // parity is still enforced above.
         $nData = json_decode($nr['result']['content'][0]['text'] ?? '{}', true) ?? [];
-        $pData = json_decode($pr['result']['content'][0]['text'] ?? '{}', true) ?? [];
+        $pText = $pr['result']['content'][0]['text'] ?? '';
+        $pData = json_decode($pText, true);
+        if ($pData === null) {
+            echo "  (markdown output, structure check skipped)";
+            $pass++;
+            echo "\n";
+            continue;
+        }
         $issues = deepCompare($nData, $pData);
         if (empty($issues)) {
             echo "  (structure match)";

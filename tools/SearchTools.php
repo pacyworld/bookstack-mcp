@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class SearchTools
 {
@@ -25,7 +26,7 @@ class SearchTools
 	 */
 	#[McpTool(
 		name: 'bookstack_search',
-		description: 'Search across all BookStack content. Supports advanced syntax: "exact phrase", {type:page|book|chapter|shelf}, {tag:name=value}, {created_by:me}. Page results contain snippets only — use bookstack_pages_read for full content.',
+		description: 'Search across all BookStack content. Supports advanced syntax: "exact phrase", {type:page|book|chapter|shelf}, {tag:name=value}, {created_by:me}. Returns Markdown-formatted results with breadcrumbs and highlighted snippets — snippets only, use bookstack_pages_read for full content. A footer indicates when more result pages exist.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -38,11 +39,13 @@ class SearchTools
 			'required' => ['query', 'instance'],
 		]
 	)]
-	public function bookstack_search(string $query, int $count = 20, int $page = 1, string $instance = ''): array
+	public function bookstack_search(string $query, int $count = 20, int $page = 1, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
 
-		$params = ['query' => $query, 'count' => min($count, 100), 'page' => max($page, 1)];
-		return $client->get('search', $params);
+		$count = min($count, 100);
+		$page = max($page, 1);
+		$response = $client->get('search', ['query' => $query, 'count' => $count, 'page' => $page]);
+		return ResponseFormatter::searchResults($response, $query, $page, $count);
 	}
 }

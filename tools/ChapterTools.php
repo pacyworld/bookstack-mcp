@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class ChapterTools
 {
@@ -25,7 +26,7 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_list',
-		description: 'List all chapters visible to the authenticated user.',
+		description: 'List all chapters visible to the authenticated user. Returns a Markdown list with id, name, parent book, and a pagination hint when more results exist.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -37,10 +38,11 @@ class ChapterTools
 			],
 		]
 	)]
-	public function bookstack_chapters_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
+	public function bookstack_chapters_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('chapters', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		$response = $client->get('chapters', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		return ResponseFormatter::chaptersList($response, $offset, $sort);
 	}
 
 	/**
@@ -48,7 +50,7 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_read',
-		description: 'Get details of a specific chapter, including a list of pages contained within it.',
+		description: 'Get details of a specific chapter as Markdown, including a list of pages contained within it.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -59,10 +61,10 @@ class ChapterTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_chapters_read(int $id, string $instance = ''): array
+	public function bookstack_chapters_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("chapters/{$id}");
+		return ResponseFormatter::chapterDetail($client->get("chapters/{$id}"));
 	}
 
 	/**

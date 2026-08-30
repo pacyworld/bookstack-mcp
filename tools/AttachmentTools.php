@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class AttachmentTools
 {
@@ -33,10 +34,11 @@ class AttachmentTools
 			],
 		]
 	)]
-	public function bookstack_attachments_list(int $count = 20, int $offset = 0, string $instance = ''): array
+	public function bookstack_attachments_list(int $count = 20, int $offset = 0, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('attachments', ['count' => min($count, 500), 'offset' => $offset]);
+		$response = $client->get('attachments', ['count' => min($count, 500), 'offset' => $offset]);
+		return ResponseFormatter::attachmentsList($response, $offset);
 	}
 
 	#[McpTool(
@@ -52,10 +54,10 @@ class AttachmentTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_attachments_read(int $id, string $instance = ''): array
+	public function bookstack_attachments_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("attachments/{$id}");
+		return ResponseFormatter::attachmentDetail($client->get("attachments/{$id}"));
 	}
 
 	#[McpTool(

@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class RecycleBinTools
 {
@@ -34,10 +35,11 @@ class RecycleBinTools
 			'required' => ['instance'],
 		]
 	)]
-	public function bookstack_recyclebin_list(int $count = 20, int $offset = 0, string $instance = ''): array
+	public function bookstack_recyclebin_list(int $count = 20, int $offset = 0, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('recycle-bin', ['count' => min($count, 500), 'offset' => $offset]);
+		$response = $client->get('recycle-bin', ['count' => min($count, 500), 'offset' => $offset]);
+		return ResponseFormatter::recycleBinList($response, $offset);
 	}
 
 	#[McpTool(

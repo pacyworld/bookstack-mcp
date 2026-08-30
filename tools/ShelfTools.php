@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class ShelfTools
 {
@@ -22,7 +23,7 @@ class ShelfTools
 
 	#[McpTool(
 		name: 'bookstack_shelves_list',
-		description: 'List all bookshelves. Shelves organize books into collections.',
+		description: 'List all bookshelves. Shelves organize books into collections. Returns a Markdown list with a pagination hint when more results exist.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -34,15 +35,16 @@ class ShelfTools
 			],
 		]
 	)]
-	public function bookstack_shelves_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
+	public function bookstack_shelves_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('shelves', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		$response = $client->get('shelves', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		return ResponseFormatter::shelvesList($response, $offset, $sort);
 	}
 
 	#[McpTool(
 		name: 'bookstack_shelves_read',
-		description: 'Get details of a specific bookshelf, including the list of books assigned to it.',
+		description: 'Get details of a specific bookshelf as Markdown, including the list of books assigned to it.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -53,10 +55,10 @@ class ShelfTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_shelves_read(int $id, string $instance = ''): array
+	public function bookstack_shelves_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("shelves/{$id}");
+		return ResponseFormatter::shelfDetail($client->get("shelves/{$id}"));
 	}
 
 	#[McpTool(

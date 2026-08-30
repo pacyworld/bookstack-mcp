@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class PageTools
 {
@@ -25,7 +26,7 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_list',
-		description: 'List all pages visible to the authenticated user with pagination and filtering.',
+		description: 'List all pages visible to the authenticated user with pagination and filtering. Returns a Markdown list with id, name, parent book/chapter, and a pagination hint when more results exist.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -37,10 +38,11 @@ class PageTools
 			],
 		]
 	)]
-	public function bookstack_pages_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
+	public function bookstack_pages_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('pages', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		$response = $client->get('pages', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		return ResponseFormatter::pagesList($response, $offset, $sort);
 	}
 
 	/**
@@ -48,7 +50,7 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_read',
-		description: 'Get the full details and content of a page. Includes raw HTML and Markdown content.',
+		description: 'Get the full content of a page as Markdown with a metadata header (book/chapter breadcrumb, tags, dates). Pages authored in HTML return their HTML body instead. Raw HTML is also available via bookstack_pages_export format=html.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -59,10 +61,10 @@ class PageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_pages_read(int $id, string $instance = ''): array
+	public function bookstack_pages_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("pages/{$id}");
+		return ResponseFormatter::pageDetail($client->get("pages/{$id}"));
 	}
 
 	/**

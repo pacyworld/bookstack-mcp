@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class UserTools
 {
@@ -34,10 +35,11 @@ class UserTools
 			],
 		]
 	)]
-	public function bookstack_users_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
+	public function bookstack_users_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('users', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		$response = $client->get('users', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		return ResponseFormatter::usersList($response, $offset, $sort);
 	}
 
 	#[McpTool(
@@ -53,10 +55,10 @@ class UserTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_users_read(int $id, string $instance = ''): array
+	public function bookstack_users_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("users/{$id}");
+		return ResponseFormatter::userDetail($client->get("users/{$id}"));
 	}
 
 	#[McpTool(

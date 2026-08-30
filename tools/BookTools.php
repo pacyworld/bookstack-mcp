@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class BookTools
 {
@@ -25,7 +26,7 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_list',
-		description: 'List all books visible to the authenticated user. Books are the top-level containers in BookStack.',
+		description: 'List all books visible to the authenticated user. Books are the top-level containers in BookStack. Returns a Markdown list with id, name, description, and a pagination hint when more results exist.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -37,10 +38,11 @@ class BookTools
 			],
 		]
 	)]
-	public function bookstack_books_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): array
+	public function bookstack_books_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('books', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		$response = $client->get('books', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
+		return ResponseFormatter::booksList($response, $offset, $sort);
 	}
 
 	/**
@@ -48,7 +50,7 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_read',
-		description: 'Get details of a specific book including its complete content hierarchy (chapters and pages). Use this to explore what is inside a book.',
+		description: 'Get details of a specific book including its complete content hierarchy (chapters and pages) as Markdown. Use this to explore what is inside a book.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -59,10 +61,10 @@ class BookTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_books_read(int $id, string $instance = ''): array
+	public function bookstack_books_read(int $id, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get("books/{$id}");
+		return ResponseFormatter::bookDetail($client->get("books/{$id}"));
 	}
 
 	/**

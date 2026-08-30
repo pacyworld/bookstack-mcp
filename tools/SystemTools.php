@@ -10,6 +10,7 @@
 
 use EnchiladaMCP\McpTool;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class SystemTools
 {
@@ -52,10 +53,11 @@ class SystemTools
 			'required' => ['instance'],
 		]
 	)]
-	public function bookstack_audit_log(int $count = 20, int $offset = 0, string $instance = ''): array
+	public function bookstack_audit_log(int $count = 20, int $offset = 0, string $instance = ''): string
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('audit-log', ['count' => min($count, 500), 'offset' => $offset]);
+		$response = $client->get('audit-log', ['count' => min($count, 500), 'offset' => $offset]);
+		return ResponseFormatter::auditLog($response, $offset);
 	}
 
 	#[McpTool(
