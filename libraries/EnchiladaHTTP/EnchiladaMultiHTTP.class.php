@@ -169,10 +169,17 @@ class EnchiladaMultiHTTP {
 	 */
 	public function tick() {
 		$running = null;
-		// Non-blocking: use a small timeout in select
+		// Drive the curl_multi state machine
 		do {
 			$status = curl_multi_exec($this->multiHandle, $running);
 		} while ($status === CURLM_CALL_MULTI_PERFORM);
+
+		// Wait for activity on sockets (up to 100ms). Without this call,
+		// curl_multi_exec() alone may not detect server-side closes or
+		// timeouts, leaving handles stuck in CLOSE_WAIT indefinitely.
+		if ($running > 0) {
+			curl_multi_select($this->multiHandle, 0.1);
+		}
 
 		// Process any completed transfers
 		while ($info = curl_multi_info_read($this->multiHandle)) {
