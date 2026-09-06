@@ -130,6 +130,13 @@ $init = $rpc(0, 'initialize', [
 ok('process initialize OK', isset($init['result']['protocolVersion']));
 fwrite($pipes[0], json_encode(['jsonrpc' => '2.0', 'method' => 'notifications/initialized']) . "\n");
 
+// Implementation metadata (MCP 2025-11-25)
+$serverInfo = $init['result']['serverInfo'] ?? [];
+ok('metadata: title', ($serverInfo['title'] ?? null) === APPLICATION_NAME, json_encode($serverInfo));
+ok('metadata: description', !empty($serverInfo['description']));
+ok('metadata: websiteUrl', ($serverInfo['websiteUrl'] ?? null) === APPLICATION_WEBSITE);
+ok('metadata: icons', !empty($serverInfo['icons']) && str_ends_with($serverInfo['icons'][0]['src'] ?? '', 'docs/icon.svg'));
+
 $offline = [
 	'bookstack_server_info'      => [],
 	'bookstack_list_instances'   => [],

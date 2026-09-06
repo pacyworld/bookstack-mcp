@@ -80,6 +80,20 @@ debug("Loaded {$instanceCount} instance(s) from {$configPath}");
 $server = new McpServer(APPLICATION_SLUG, APPLICATION_VERSION);
 $server->setInstructions('BookStack wiki management. Use bookstack_list_instances to see configured instances. The instance parameter is required on all tool calls.');
 
+// Implementation metadata (MCP 2025-11-25); strictly-older clients ignore
+// the extra serverInfo members. The icon is served from the repo so it can
+// evolve without a PHAR rebuild.
+$server->setTitle(APPLICATION_NAME);
+$server->setDescription('Multi-instance BookStack wiki management: content CRUD, media, search, and admin via the BookStack REST API.');
+$server->setWebsiteUrl(APPLICATION_WEBSITE);
+$server->setIcons([
+	[
+		'src' => 'https://pacyworld.dev/pacyworld/bookstack-mcp/raw/branch/master/docs/icon.svg',
+		'mimeType' => 'image/svg+xml',
+		'sizes' => ['any'],
+	],
+]);
+
 // Register tools
 $toolDir = APPLICATION_ROOT . 'tools';
 if (is_dir($toolDir)) {
