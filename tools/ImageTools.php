@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -35,11 +36,11 @@ class ImageTools
 			],
 		]
 	)]
-	public function bookstack_images_list(int $count = 20, int $offset = 0, string $sort = 'created_at', string $instance = ''): string
+	public function bookstack_images_list(int $count = 20, int $offset = 0, string $sort = 'created_at', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('image-gallery', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
-		return ResponseFormatter::imagesList($response, $offset, $sort);
+		return ToolResult::structured(ResponseFormatter::imagesList($response, $offset, $sort), $response);
 	}
 
 	#[McpTool(
@@ -55,10 +56,11 @@ class ImageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_images_read(int $id, string $instance = ''): string
+	public function bookstack_images_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::imageDetail($client->get("image-gallery/{$id}"));
+		$response = $client->get("image-gallery/{$id}");
+		return ToolResult::structured(ResponseFormatter::imageDetail($response), $response);
 	}
 
 	#[McpTool(
@@ -76,12 +78,45 @@ class ImageTools
 			'required' => ['name', 'image', 'instance'],
 		]
 	)]
-	public function bookstack_images_create(string $name, string $image, int $uploaded_to = 0, string $type = 'gallery', string $instance = ''): array
+	public function bookstack_images_create(string $name, string $image, int $uploaded_to = 0, string $type = 'gallery', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		$data = ['name' => $name, 'image' => $image, 'type' => $type];
-		if ($uploaded_to > 0) $data['uploaded_to'] = $uploaded_to;
-		return $client->post('image-gallery', $data);
+
+		// Accept an optional data-URI prefix (data:image/png;base64,...)
+		if (str_starts_with($image, 'data:') && ($comma = strpos($image, ',')) !== false) {
+			$image = substr($image, $comma + 1);
+		}
+
+		$binary = base64_decode($image, true);
+		if ($binary === false) {
+			throw new \InvalidArgumentException('image must be valid base64-encoded image content');
+		}
+
+		$mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($binary) ?: 'application/octet-stream';
+
+		// BookStack's create-image endpoint expects a real multipart file
+		// upload; posting the base64 string as a form field fails with
+		// "Call to a member function getClientOriginalExtension() on string".
+		// The route stays singular: POST /api/image-gallery is correct, the
+		// plural /api/image-galleries route exists but is GET-only.
+		$tmp = tempnam(sys_get_temp_dir(), 'bsimg_');
+		file_put_contents($tmp, $binary);
+		try {
+			$fields = [
+				'name' => $name,
+				'image' => new \CURLFile($tmp, $mime, $name),
+				'type' => $type,
+			];
+			if ($uploaded_to > 0) $fields['uploaded_to'] = $uploaded_to;
+			$response = $client->postMultipart('image-gallery', $fields);
+		} finally {
+			unlink($tmp);
+		}
+
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Image uploaded.', 'image', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -97,12 +132,16 @@ class ImageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_images_update(int $id, string $name = '', string $instance = ''): array
+	public function bookstack_images_update(int $id, string $name = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
-		return $client->put("image-gallery/{$id}", $data);
+		$response = $client->put("image-gallery/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Image updated.', 'image', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -117,9 +156,13 @@ class ImageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_images_delete(int $id, string $instance = ''): array
+	public function bookstack_images_delete(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("image-gallery/{$id}");
+		$client->delete("image-gallery/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('image', $id, false),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 }

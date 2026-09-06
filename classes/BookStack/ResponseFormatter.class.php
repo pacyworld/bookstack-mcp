@@ -439,6 +439,120 @@ class ResponseFormatter
 		);
 	}
 
+	/* ---------------- Mutation results ---------------- */
+
+	/**
+	 * Format a create/update confirmation: a one-line action followed by the
+	 * entity detail header. Deliberately compact — the submitted content is
+	 * not echoed back, the full entity stays available in structuredContent.
+	 */
+	public static function mutationSummary(string $action, string $type, array $entity): string
+	{
+		return "{$action}\n\n" . self::detailHeader($entity, $type);
+	}
+
+	/**
+	 * Format a deletion confirmation.
+	 */
+	public static function deleted(string $type, int $id, bool $recyclable = true): string
+	{
+		$out = "# Deleted [{$type}, id: {$id}]";
+		$out .= $recyclable
+			? "\n\nMoved to the recycle bin. Review with bookstack_recyclebin_list; restore with bookstack_recyclebin_restore."
+			: "\n\nPermanently deleted.";
+		return $out;
+	}
+
+	/* ---------------- System ---------------- */
+
+	/**
+	 * Format a content-permissions response: owner, role overrides, and
+	 * fallback role access.
+	 */
+	public static function permissionsDetail(array $permissions, string $contentType, int $contentId): string
+	{
+		$lines = ["# Permissions [{$contentType}, id: {$contentId}]", ''];
+
+		$owner = $permissions['owner'] ?? null;
+		if (is_array($owner) && !empty($owner['name'])) {
+			$lines[] = 'Owner: ' . $owner['name'] . ' [id: ' . ($owner['id'] ?? '?') . ']';
+			$lines[] = '';
+		}
+
+		$rolePermissions = $permissions['role_permissions'] ?? [];
+		if (!empty($rolePermissions)) {
+			$lines[] = '## Role overrides';
+			foreach ($rolePermissions as $rp) {
+				$flags = [];
+				foreach (['view', 'create', 'update', 'delete'] as $cap) {
+					if (array_key_exists($cap, $rp)) {
+						$flags[] = $cap . '=' . self::flag($rp[$cap]);
+					}
+				}
+				$lines[] = '- **' . ($rp['display_name'] ?? $rp['name'] ?? '?') . '** [id: ' . ($rp['id'] ?? '?') . ']'
+					. (!empty($flags) ? ': ' . implode(', ', $flags) : '');
+			}
+			$lines[] = '';
+		}
+
+		$fallback = $permissions['fallback_permissions'] ?? null;
+		if (is_array($fallback) && !empty($fallback)) {
+			if (array_key_exists('active', $fallback)) {
+				$lines[] = 'Fallback (all roles) active: ' . ($fallback['active'] ? 'yes' : 'no');
+			}
+			foreach (['view', 'create', 'update', 'delete'] as $cap) {
+				$roles = $fallback[$cap] ?? null;
+				if (is_array($roles) && !empty($roles)) {
+					$names = array_map(
+						fn($r) => is_array($r) ? (($r['display_name'] ?? $r['name'] ?? '?') . ' [id: ' . ($r['id'] ?? '?') . ']') : (string) $r,
+						$roles
+					);
+					$lines[] = 'Fallback ' . $cap . ': ' . implode(', ', $names);
+				} elseif (!is_array($roles) && $roles !== null) {
+					$lines[] = 'Fallback ' . $cap . ': ' . self::flag($roles);
+				}
+			}
+		}
+
+		return implode("\n", $lines);
+	}
+
+	/**
+	 * Format the instance system info response as key/value lines.
+	 */
+	public static function systemInfo(array $info): string
+	{
+		$lines = ['# BookStack System Info', ''];
+		foreach ($info as $key => $value) {
+			if (is_scalar($value) || $value === null) {
+				$lines[] = '- **' . $key . '**: ' . ($value === null ? '(null)' : (string) $value);
+			} elseif (is_array($value)) {
+				$lines[] = '- **' . $key . '**: ' . json_encode($value);
+			}
+		}
+		return implode("\n", $lines);
+	}
+
+	/**
+	 * Format the configured instance list.
+	 *
+	 * @param array<string,array{url:string,description:string}> $instances
+	 */
+	public static function instanceList(array $instances): string
+	{
+		if (empty($instances)) {
+			return "# Instances\n\nNo instances configured.";
+		}
+		$lines = ['# Instances — ' . count($instances) . ' configured', ''];
+		foreach ($instances as $name => $config) {
+			$lines[] = '- **' . $name . '** — ' . ($config['url'] ?? '?')
+				. (!empty($config['description']) ? ' (' . $config['description'] . ')' : '');
+		}
+		$lines[] = '';
+		$lines[] = 'Pass the instance name as the instance parameter on tool calls.';
+		return implode("\n", $lines);
+	}
+
 	/* ---------------- Shared helpers ---------------- */
 
 	/**
@@ -521,6 +635,18 @@ class ResponseFormatter
 			$out .= "\n\n---\nMore results: {$hint} ({$remaining} of {$total} remaining)";
 		}
 		return $out;
+	}
+
+	/**
+	 * Render a permission flag: booleans as yes/no, anything else (e.g.
+	 * inherited/null) as 'inherit'.
+	 */
+	private static function flag(mixed $value): string
+	{
+		if (is_bool($value)) {
+			return $value ? 'yes' : 'no';
+		}
+		return 'inherit';
 	}
 
 	/**

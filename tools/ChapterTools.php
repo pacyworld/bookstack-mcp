@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -38,11 +39,11 @@ class ChapterTools
 			],
 		]
 	)]
-	public function bookstack_chapters_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
+	public function bookstack_chapters_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('chapters', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
-		return ResponseFormatter::chaptersList($response, $offset, $sort);
+		return ToolResult::structured(ResponseFormatter::chaptersList($response, $offset, $sort), $response);
 	}
 
 	/**
@@ -61,10 +62,11 @@ class ChapterTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_chapters_read(int $id, string $instance = ''): string
+	public function bookstack_chapters_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::chapterDetail($client->get("chapters/{$id}"));
+		$response = $client->get("chapters/{$id}");
+		return ToolResult::structured(ResponseFormatter::chapterDetail($response), $response);
 	}
 
 	/**
@@ -84,14 +86,18 @@ class ChapterTools
 			'required' => ['book_id', 'name', 'instance'],
 		]
 	)]
-	public function bookstack_chapters_create(int $book_id, string $name, string $description = '', string $instance = ''): array
+	public function bookstack_chapters_create(int $book_id, string $name, string $description = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = ['book_id' => $book_id, 'name' => $name];
 		if (!empty($description)) {
 			$data['description'] = $description;
 		}
-		return $client->post('chapters', $data);
+		$response = $client->post('chapters', $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Chapter created.', 'chapter', $response),
+			$response
+		);
 	}
 
 	/**
@@ -112,14 +118,18 @@ class ChapterTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_chapters_update(int $id, string $name = '', string $description = '', int $book_id = 0, string $instance = ''): array
+	public function bookstack_chapters_update(int $id, string $name = '', string $description = '', int $book_id = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($description)) $data['description'] = $description;
 		if ($book_id > 0) $data['book_id'] = $book_id;
-		return $client->put("chapters/{$id}", $data);
+		$response = $client->put("chapters/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Chapter updated.', 'chapter', $response),
+			$response
+		);
 	}
 
 	/**
@@ -137,10 +147,14 @@ class ChapterTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_chapters_delete(int $id, string $instance = ''): array
+	public function bookstack_chapters_delete(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("chapters/{$id}");
+		$client->delete("chapters/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('chapter', $id),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 
 	/**
@@ -160,10 +174,11 @@ class ChapterTools
 			'required' => ['id', 'format', 'instance'],
 		]
 	)]
-	public function bookstack_chapters_export(int $id, string $format = 'markdown', string $instance = ''): string
+	public function bookstack_chapters_export(int $id, string $format = 'markdown', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get("chapters/{$id}/export/{$format}");
-		return is_string($response) ? $response : json_encode($response);
+		$text = is_string($response) ? $response : json_encode($response);
+		return ToolResult::structured($text, ['id' => $id, 'format' => $format, 'content' => $text]);
 	}
 }

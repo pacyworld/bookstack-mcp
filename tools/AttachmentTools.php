@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -34,11 +35,11 @@ class AttachmentTools
 			],
 		]
 	)]
-	public function bookstack_attachments_list(int $count = 20, int $offset = 0, string $instance = ''): string
+	public function bookstack_attachments_list(int $count = 20, int $offset = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('attachments', ['count' => min($count, 500), 'offset' => $offset]);
-		return ResponseFormatter::attachmentsList($response, $offset);
+		return ToolResult::structured(ResponseFormatter::attachmentsList($response, $offset), $response);
 	}
 
 	#[McpTool(
@@ -54,10 +55,11 @@ class AttachmentTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_attachments_read(int $id, string $instance = ''): string
+	public function bookstack_attachments_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::attachmentDetail($client->get("attachments/{$id}"));
+		$response = $client->get("attachments/{$id}");
+		return ToolResult::structured(ResponseFormatter::attachmentDetail($response), $response);
 	}
 
 	#[McpTool(
@@ -74,10 +76,14 @@ class AttachmentTools
 			'required' => ['name', 'uploaded_to', 'link', 'instance'],
 		]
 	)]
-	public function bookstack_attachments_create(string $name, int $uploaded_to, string $link, string $instance = ''): array
+	public function bookstack_attachments_create(string $name, int $uploaded_to, string $link, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->post('attachments', ['name' => $name, 'uploaded_to' => $uploaded_to, 'link' => $link]);
+		$response = $client->post('attachments', ['name' => $name, 'uploaded_to' => $uploaded_to, 'link' => $link]);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Attachment created.', 'attachment', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -94,13 +100,17 @@ class AttachmentTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_attachments_update(int $id, string $name = '', string $link = '', string $instance = ''): array
+	public function bookstack_attachments_update(int $id, string $name = '', string $link = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($link)) $data['link'] = $link;
-		return $client->put("attachments/{$id}", $data);
+		$response = $client->put("attachments/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Attachment updated.', 'attachment', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -115,9 +125,13 @@ class AttachmentTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_attachments_delete(int $id, string $instance = ''): array
+	public function bookstack_attachments_delete(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("attachments/{$id}");
+		$client->delete("attachments/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('attachment', $id, false),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 }

@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -38,11 +39,11 @@ class PageTools
 			],
 		]
 	)]
-	public function bookstack_pages_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
+	public function bookstack_pages_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('pages', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
-		return ResponseFormatter::pagesList($response, $offset, $sort);
+		return ToolResult::structured(ResponseFormatter::pagesList($response, $offset, $sort), $response);
 	}
 
 	/**
@@ -61,10 +62,11 @@ class PageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_pages_read(int $id, string $instance = ''): string
+	public function bookstack_pages_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::pageDetail($client->get("pages/{$id}"));
+		$response = $client->get("pages/{$id}");
+		return ToolResult::structured(ResponseFormatter::pageDetail($response), $response);
 	}
 
 	/**
@@ -86,7 +88,7 @@ class PageTools
 			'required' => ['name', 'instance'],
 		]
 	)]
-	public function bookstack_pages_create(string $name, int $book_id = 0, int $chapter_id = 0, string $markdown = '', string $html = '', string $instance = ''): array
+	public function bookstack_pages_create(string $name, int $book_id = 0, int $chapter_id = 0, string $markdown = '', string $html = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name];
@@ -94,7 +96,11 @@ class PageTools
 		if ($chapter_id > 0) $data['chapter_id'] = $chapter_id;
 		if (!empty($markdown)) $data['markdown'] = $markdown;
 		elseif (!empty($html)) $data['html'] = $html;
-		return $client->post('pages', $data);
+		$response = $client->post('pages', $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Page created.', 'page', $response),
+			$response
+		);
 	}
 
 	/**
@@ -115,14 +121,18 @@ class PageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_pages_update(int $id, string $name = '', string $markdown = '', string $html = '', string $instance = ''): array
+	public function bookstack_pages_update(int $id, string $name = '', string $markdown = '', string $html = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($markdown)) $data['markdown'] = $markdown;
 		elseif (!empty($html)) $data['html'] = $html;
-		return $client->put("pages/{$id}", $data);
+		$response = $client->put("pages/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Page updated.', 'page', $response),
+			$response
+		);
 	}
 
 	/**
@@ -140,10 +150,14 @@ class PageTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_pages_delete(int $id, string $instance = ''): array
+	public function bookstack_pages_delete(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("pages/{$id}");
+		$client->delete("pages/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('page', $id),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 
 	/**
@@ -163,10 +177,11 @@ class PageTools
 			'required' => ['id', 'format', 'instance'],
 		]
 	)]
-	public function bookstack_pages_export(int $id, string $format = 'markdown', string $instance = ''): string
+	public function bookstack_pages_export(int $id, string $format = 'markdown', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get("pages/{$id}/export/{$format}");
-		return is_string($response) ? $response : json_encode($response);
+		$text = is_string($response) ? $response : json_encode($response);
+		return ToolResult::structured($text, ['id' => $id, 'format' => $format, 'content' => $text]);
 	}
 }

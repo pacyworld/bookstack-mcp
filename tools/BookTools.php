@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -38,11 +39,11 @@ class BookTools
 			],
 		]
 	)]
-	public function bookstack_books_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
+	public function bookstack_books_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('books', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
-		return ResponseFormatter::booksList($response, $offset, $sort);
+		return ToolResult::structured(ResponseFormatter::booksList($response, $offset, $sort), $response);
 	}
 
 	/**
@@ -61,10 +62,11 @@ class BookTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_books_read(int $id, string $instance = ''): string
+	public function bookstack_books_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::bookDetail($client->get("books/{$id}"));
+		$response = $client->get("books/{$id}");
+		return ToolResult::structured(ResponseFormatter::bookDetail($response), $response);
 	}
 
 	/**
@@ -83,14 +85,18 @@ class BookTools
 			'required' => ['name', 'instance'],
 		]
 	)]
-	public function bookstack_books_create(string $name, string $description = '', string $instance = ''): array
+	public function bookstack_books_create(string $name, string $description = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name];
 		if (!empty($description)) {
 			$data['description'] = $description;
 		}
-		return $client->post('books', $data);
+		$response = $client->post('books', $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Book created.', 'book', $response),
+			$response
+		);
 	}
 
 	/**
@@ -110,13 +116,17 @@ class BookTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_books_update(int $id, string $name = '', string $description = '', string $instance = ''): array
+	public function bookstack_books_update(int $id, string $name = '', string $description = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($description)) $data['description'] = $description;
-		return $client->put("books/{$id}", $data);
+		$response = $client->put("books/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Book updated.', 'book', $response),
+			$response
+		);
 	}
 
 	/**
@@ -134,10 +144,14 @@ class BookTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_books_delete(int $id, string $instance = ''): array
+	public function bookstack_books_delete(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("books/{$id}");
+		$client->delete("books/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('book', $id),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 
 	/**
@@ -157,10 +171,11 @@ class BookTools
 			'required' => ['id', 'format', 'instance'],
 		]
 	)]
-	public function bookstack_books_export(int $id, string $format = 'markdown', string $instance = ''): string
+	public function bookstack_books_export(int $id, string $format = 'markdown', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get("books/{$id}/export/{$format}");
-		return is_string($response) ? $response : json_encode($response);
+		$text = is_string($response) ? $response : json_encode($response);
+		return ToolResult::structured($text, ['id' => $id, 'format' => $format, 'content' => $text]);
 	}
 }

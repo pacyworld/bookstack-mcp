@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -39,13 +40,13 @@ class SearchTools
 			'required' => ['query', 'instance'],
 		]
 	)]
-	public function bookstack_search(string $query, int $count = 20, int $page = 1, string $instance = ''): string
+	public function bookstack_search(string $query, int $count = 20, int $page = 1, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 
 		$count = min($count, 100);
 		$page = max($page, 1);
 		$response = $client->get('search', ['query' => $query, 'count' => $count, 'page' => $page]);
-		return ResponseFormatter::searchResults($response, $query, $page, $count);
+		return ToolResult::structured(ResponseFormatter::searchResults($response, $query, $page, $count), $response);
 	}
 }

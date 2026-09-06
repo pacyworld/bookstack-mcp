@@ -9,7 +9,9 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
+use BookStack\ResponseFormatter;
 
 class InstanceTools
 {
@@ -32,11 +34,12 @@ class InstanceTools
 			'properties' => new \stdClass(),
 		]
 	)]
-	public function bookstack_list_instances(): array
+	public function bookstack_list_instances(): ToolResult
 	{
-		return [
-			'instances' => $this->manager->listInstances(),
-			'count' => $this->manager->count(),
-		];
+		$instances = $this->manager->listInstances();
+		return ToolResult::structured(
+			ResponseFormatter::instanceList($instances),
+			['instances' => $instances, 'count' => $this->manager->count()]
+		);
 	}
 }

@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -35,11 +36,11 @@ class ShelfTools
 			],
 		]
 	)]
-	public function bookstack_shelves_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
+	public function bookstack_shelves_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('shelves', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
-		return ResponseFormatter::shelvesList($response, $offset, $sort);
+		return ToolResult::structured(ResponseFormatter::shelvesList($response, $offset, $sort), $response);
 	}
 
 	#[McpTool(
@@ -55,10 +56,11 @@ class ShelfTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_shelves_read(int $id, string $instance = ''): string
+	public function bookstack_shelves_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::shelfDetail($client->get("shelves/{$id}"));
+		$response = $client->get("shelves/{$id}");
+		return ToolResult::structured(ResponseFormatter::shelfDetail($response), $response);
 	}
 
 	#[McpTool(
@@ -75,13 +77,17 @@ class ShelfTools
 			'required' => ['name', 'instance'],
 		]
 	)]
-	public function bookstack_shelves_create(string $name, string $description = '', array $books = [], string $instance = ''): array
+	public function bookstack_shelves_create(string $name, string $description = '', array $books = [], string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name];
 		if (!empty($description)) $data['description'] = $description;
 		if (!empty($books)) $data['books'] = $books;
-		return $client->post('shelves', $data);
+		$response = $client->post('shelves', $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Shelf created.', 'bookshelf', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -99,14 +105,18 @@ class ShelfTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_shelves_update(int $id, string $name = '', string $description = '', array $books = [], string $instance = ''): array
+	public function bookstack_shelves_update(int $id, string $name = '', string $description = '', array $books = [], string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($description)) $data['description'] = $description;
 		if (!empty($books)) $data['books'] = $books;
-		return $client->put("shelves/{$id}", $data);
+		$response = $client->put("shelves/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Shelf updated.', 'bookshelf', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -121,9 +131,13 @@ class ShelfTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_shelves_delete(int $id, string $instance = ''): array
+	public function bookstack_shelves_delete(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("shelves/{$id}");
+		$client->delete("shelves/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('bookshelf', $id),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 }

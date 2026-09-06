@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -34,11 +35,11 @@ class RoleTools
 			],
 		]
 	)]
-	public function bookstack_roles_list(int $count = 20, int $offset = 0, string $instance = ''): string
+	public function bookstack_roles_list(int $count = 20, int $offset = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('roles', ['count' => min($count, 500), 'offset' => $offset]);
-		return ResponseFormatter::rolesList($response, $offset);
+		return ToolResult::structured(ResponseFormatter::rolesList($response, $offset), $response);
 	}
 
 	#[McpTool(
@@ -54,10 +55,11 @@ class RoleTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_roles_read(int $id, string $instance = ''): string
+	public function bookstack_roles_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::roleDetail($client->get("roles/{$id}"));
+		$response = $client->get("roles/{$id}");
+		return ToolResult::structured(ResponseFormatter::roleDetail($response), $response);
 	}
 
 	#[McpTool(
@@ -73,12 +75,16 @@ class RoleTools
 			'required' => ['display_name', 'instance'],
 		]
 	)]
-	public function bookstack_roles_create(string $display_name, string $description = '', string $instance = ''): array
+	public function bookstack_roles_create(string $display_name, string $description = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = ['display_name' => $display_name];
 		if (!empty($description)) $data['description'] = $description;
-		return $client->post('roles', $data);
+		$response = $client->post('roles', $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Role created.', 'role', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -95,13 +101,17 @@ class RoleTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_roles_update(int $id, string $display_name = '', string $description = '', string $instance = ''): array
+	public function bookstack_roles_update(int $id, string $display_name = '', string $description = '', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($display_name)) $data['display_name'] = $display_name;
 		if (!empty($description)) $data['description'] = $description;
-		return $client->put("roles/{$id}", $data);
+		$response = $client->put("roles/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('Role updated.', 'role', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -117,13 +127,17 @@ class RoleTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_roles_delete(int $id, int $migrate_ownership_id = 0, string $instance = ''): array
+	public function bookstack_roles_delete(int $id, int $migrate_ownership_id = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$path = "roles/{$id}";
 		if ($migrate_ownership_id > 0) {
 			$path .= "?migrate_ownership_id={$migrate_ownership_id}";
 		}
-		return $client->delete($path);
+		$client->delete($path);
+		return ToolResult::structured(
+			ResponseFormatter::deleted('role', $id, false),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 }

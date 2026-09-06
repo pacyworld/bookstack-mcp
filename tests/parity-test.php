@@ -201,15 +201,14 @@ foreach ($tests as [$tool, $args, $label]) {
     echo str_pad($label, 22) . " {$icon}";
 
     if ($nOk && $pOk) {
-        // Deep structural comparison. The PHP server intentionally returns
-        // Markdown for read/list/search tools (v0.3.0+) instead of raw JSON;
-        // non-JSON responses skip structural comparison — success/failure
-        // parity is still enforced above.
+        // Dual content (v0.4.0+): the PHP server returns Markdown in content
+        // plus the raw API response in structuredContent, so structure
+        // comparison runs against structuredContent, falling back to a JSON
+        // content body for any tool still in legacy mode.
         $nData = json_decode($nr['result']['content'][0]['text'] ?? '{}', true) ?? [];
-        $pText = $pr['result']['content'][0]['text'] ?? '';
-        $pData = json_decode($pText, true);
-        if ($pData === null) {
-            echo "  (markdown output, structure check skipped)";
+        $pData = $pr['result']['structuredContent'] ?? json_decode($pr['result']['content'][0]['text'] ?? '', true);
+        if (!is_array($pData)) {
+            echo "  (no structured payload, structure check skipped)";
             $pass++;
             echo "\n";
             continue;

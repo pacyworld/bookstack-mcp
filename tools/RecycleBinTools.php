@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -35,11 +36,11 @@ class RecycleBinTools
 			'required' => ['instance'],
 		]
 	)]
-	public function bookstack_recyclebin_list(int $count = 20, int $offset = 0, string $instance = ''): string
+	public function bookstack_recyclebin_list(int $count = 20, int $offset = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('recycle-bin', ['count' => min($count, 500), 'offset' => $offset]);
-		return ResponseFormatter::recycleBinList($response, $offset);
+		return ToolResult::structured(ResponseFormatter::recycleBinList($response, $offset), $response);
 	}
 
 	#[McpTool(
@@ -54,10 +55,15 @@ class RecycleBinTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_recyclebin_restore(int $id, string $instance = ''): array
+	public function bookstack_recyclebin_restore(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->put("recycle-bin/{$id}");
+		// BookStack returns 204 No Content on restore — the response is empty
+		$client->put("recycle-bin/{$id}");
+		return ToolResult::structured(
+			"# Restored [deletion_id: {$id}]\n\nItem returned to its previous location.",
+			['deletion_id' => $id, 'restored' => true]
+		);
 	}
 
 	#[McpTool(
@@ -72,9 +78,13 @@ class RecycleBinTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_recyclebin_destroy(int $id, string $instance = ''): array
+	public function bookstack_recyclebin_destroy(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->delete("recycle-bin/{$id}");
+		$client->delete("recycle-bin/{$id}");
+		return ToolResult::structured(
+			ResponseFormatter::deleted('deletion', $id, false),
+			['deletion_id' => $id, 'destroyed' => true]
+		);
 	}
 }

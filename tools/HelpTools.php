@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 
 class HelpTools
@@ -29,9 +30,9 @@ class HelpTools
 			'properties' => new \stdClass(),
 		]
 	)]
-	public function bookstack_server_info(): array
+	public function bookstack_server_info(): ToolResult
 	{
-		return [
+		$info = [
 			'name' => APPLICATION_NAME,
 			'version' => APPLICATION_VERSION,
 			'instances' => $this->manager->listInstances(),
@@ -44,7 +45,29 @@ class HelpTools
 				'system' => 'instance info, instance switching',
 			],
 			'api_docs' => 'https://demo.bookstackapp.com/api/docs',
+			'response_format' => 'Markdown text with a structuredContent JSON payload (MCP 2025-06-18 dual content)',
 		];
+
+		$lines = [
+			'# ' . $info['name'] . ' [v' . $info['version'] . ']',
+			'',
+			'Tools: ' . $info['tool_count'],
+			'',
+			'## Instances',
+		];
+		foreach ($info['instances'] as $name => $config) {
+			$lines[] = '- **' . $name . '** — ' . ($config['url'] ?? '?')
+				. (!empty($config['description']) ? ' (' . $config['description'] . ')' : '');
+		}
+		$lines[] = '';
+		$lines[] = '## Tool categories';
+		foreach ($info['categories'] as $category => $description) {
+			$lines[] = '- **' . $category . '**: ' . $description;
+		}
+		$lines[] = '';
+		$lines[] = 'API docs: ' . $info['api_docs'];
+
+		return ToolResult::structured(implode("\n", $lines), $info);
 	}
 
 	#[McpTool(
@@ -58,7 +81,7 @@ class HelpTools
 			],
 		]
 	)]
-	public function bookstack_help(string $topic = 'getting_started'): array
+	public function bookstack_help(string $topic = 'getting_started'): ToolResult
 	{
 		$topics = [
 			'getting_started' => [
@@ -121,7 +144,24 @@ class HelpTools
 			],
 		];
 
-		return $topics[$topic] ?? ['error' => "Unknown topic: {$topic}. Available: " . implode(', ', array_keys($topics))];
+		$result = $topics[$topic] ?? ['error' => "Unknown topic: {$topic}. Available: " . implode(', ', array_keys($topics))];
+
+		if (isset($result['error'])) {
+			return ToolResult::structured("# Error\n\n" . $result['error'], $result);
+		}
+
+		$lines = ['# ' . ($result['title'] ?? $topic), ''];
+		foreach (['steps', 'syntax', 'tips'] as $key) {
+			foreach ($result[$key] ?? [] as $item) {
+				$lines[] = '- ' . $item;
+			}
+		}
+		if (!empty($result['tip'])) {
+			$lines[] = '';
+			$lines[] = '**Tip:** ' . $result['tip'];
+		}
+
+		return ToolResult::structured(implode("\n", $lines), $result);
 	}
 
 	#[McpTool(
@@ -135,7 +175,7 @@ class HelpTools
 			],
 		]
 	)]
-	public function bookstack_error_guide(string $error_code = ''): array
+	public function bookstack_error_guide(string $error_code = ''): ToolResult
 	{
 		$errors = [
 			'UNAUTHORIZED' => [
@@ -161,11 +201,34 @@ class HelpTools
 		];
 
 		if (empty($error_code)) {
-			return ['available_codes' => array_keys($errors)];
+			$result = ['available_codes' => array_keys($errors)];
+			return ToolResult::structured(
+				"# Error Guide\n\nAvailable codes: " . implode(', ', array_keys($errors)),
+				$result
+			);
 		}
 
 		$key = strtoupper($error_code);
-		return $errors[$key] ?? ['error' => "Unknown error code: {$error_code}. Available: " . implode(', ', array_keys($errors))];
+		$result = $errors[$key] ?? ['error' => "Unknown error code: {$error_code}. Available: " . implode(', ', array_keys($errors))];
+
+		if (isset($result['error'])) {
+			return ToolResult::structured("# Error\n\n" . $result['error'], $result);
+		}
+
+		$lines = ['# ' . $key, ''];
+		$lines[] = $result['message'] ?? '';
+		$lines[] = '';
+		$lines[] = '## Causes';
+		foreach ($result['causes'] ?? [] as $cause) {
+			$lines[] = '- ' . $cause;
+		}
+		$lines[] = '';
+		$lines[] = '## Solutions';
+		foreach ($result['solutions'] ?? [] as $solution) {
+			$lines[] = '- ' . $solution;
+		}
+
+		return ToolResult::structured(implode("\n", $lines), $result);
 	}
 
 	#[McpTool(
@@ -179,7 +242,7 @@ class HelpTools
 			],
 		]
 	)]
-	public function bookstack_tool_categories(string $category = ''): array
+	public function bookstack_tool_categories(string $category = ''): ToolResult
 	{
 		$categories = [
 			'books' => [
@@ -226,13 +289,26 @@ class HelpTools
 
 		if (empty($category)) {
 			$summary = [];
+			$lines = ['# Tool Categories', ''];
 			foreach ($categories as $name => $info) {
 				$summary[$name] = $info['description'] . ' (' . count($info['tools']) . ' tools)';
+				$lines[] = '- **' . $name . '**: ' . $summary[$name];
 			}
-			return $summary;
+			return ToolResult::structured(implode("\n", $lines), $summary);
 		}
 
-		return $categories[$category] ?? ['error' => "Unknown category: {$category}. Available: " . implode(', ', array_keys($categories))];
+		$result = $categories[$category] ?? ['error' => "Unknown category: {$category}. Available: " . implode(', ', array_keys($categories))];
+
+		if (isset($result['error'])) {
+			return ToolResult::structured("# Error\n\n" . $result['error'], $result);
+		}
+
+		$lines = ['# Category: ' . $category, '', $result['description'] ?? '', ''];
+		foreach ($result['tools'] ?? [] as $tool) {
+			$lines[] = '- ' . $tool;
+		}
+
+		return ToolResult::structured(implode("\n", $lines), $result);
 	}
 
 	#[McpTool(
@@ -246,7 +322,7 @@ class HelpTools
 			],
 		]
 	)]
-	public function bookstack_usage_examples(string $workflow = ''): array
+	public function bookstack_usage_examples(string $workflow = ''): ToolResult
 	{
 		$workflows = [
 			'create_documentation' => [
@@ -296,12 +372,29 @@ class HelpTools
 
 		if (empty($workflow)) {
 			$summary = [];
+			$lines = ['# Usage Examples', ''];
 			foreach ($workflows as $name => $info) {
 				$summary[$name] = $info['title'];
+				$lines[] = '- **' . $name . '**: ' . $info['title'];
 			}
-			return $summary;
+			return ToolResult::structured(implode("\n", $lines), $summary);
 		}
 
-		return $workflows[$workflow] ?? ['error' => "Unknown workflow: {$workflow}. Available: " . implode(', ', array_keys($workflows))];
+		$result = $workflows[$workflow] ?? ['error' => "Unknown workflow: {$workflow}. Available: " . implode(', ', array_keys($workflows))];
+
+		if (isset($result['error'])) {
+			return ToolResult::structured("# Error\n\n" . $result['error'], $result);
+		}
+
+		$lines = ['# ' . ($result['title'] ?? $workflow), ''];
+		foreach ($result['steps'] ?? [] as $step) {
+			$lines[] = '- **' . $step['tool'] . '** — ' . $step['action'];
+		}
+		if (!empty($result['tip'])) {
+			$lines[] = '';
+			$lines[] = '**Tip:** ' . $result['tip'];
+		}
+
+		return ToolResult::structured(implode("\n", $lines), $result);
 	}
 }

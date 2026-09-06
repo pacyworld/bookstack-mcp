@@ -63,8 +63,12 @@ function callTool(array $s, int &$id, string $tool, array $args = []): array {
     $r = rpc($s, $id, 'tools/call', ['name' => $tool, 'arguments' => $args]);
     $isError = isset($r['result']['isError']) && $r['result']['isError'];
     $text = $r['result']['content'][0]['text'] ?? '';
-    $data = json_decode($text, true);
-    return ['ok' => !$isError && $r !== null, 'data' => $data ?? $text, 'raw' => $text, 'isError' => $isError];
+    // Dual content (v0.4.0+): the PHP server returns Markdown in content plus
+    // the raw API response in structuredContent; prefer structuredContent so
+    // structural comparison and cleanup keep working.
+    $structured = $r['result']['structuredContent'] ?? null;
+    $data = is_array($structured) ? $structured : (json_decode($text, true) ?? $text);
+    return ['ok' => !$isError && $r !== null, 'data' => $data, 'raw' => $text, 'isError' => $isError];
 }
 
 function stopMcp(array $s): void {

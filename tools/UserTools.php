@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -35,11 +36,11 @@ class UserTools
 			],
 		]
 	)]
-	public function bookstack_users_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): string
+	public function bookstack_users_list(int $count = 20, int $offset = 0, string $sort = 'name', string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('users', ['count' => min($count, 500), 'offset' => $offset, 'sort' => $sort]);
-		return ResponseFormatter::usersList($response, $offset, $sort);
+		return ToolResult::structured(ResponseFormatter::usersList($response, $offset, $sort), $response);
 	}
 
 	#[McpTool(
@@ -55,10 +56,11 @@ class UserTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_users_read(int $id, string $instance = ''): string
+	public function bookstack_users_read(int $id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return ResponseFormatter::userDetail($client->get("users/{$id}"));
+		$response = $client->get("users/{$id}");
+		return ToolResult::structured(ResponseFormatter::userDetail($response), $response);
 	}
 
 	#[McpTool(
@@ -77,14 +79,18 @@ class UserTools
 			'required' => ['name', 'email', 'instance'],
 		]
 	)]
-	public function bookstack_users_create(string $name, string $email, string $password = '', array $roles = [], bool $send_invite = false, string $instance = ''): array
+	public function bookstack_users_create(string $name, string $email, string $password = '', array $roles = [], bool $send_invite = false, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = ['name' => $name, 'email' => $email];
 		if (!empty($password)) $data['password'] = $password;
 		if (!empty($roles)) $data['roles'] = $roles;
 		if ($send_invite) $data['send_invite'] = true;
-		return $client->post('users', $data);
+		$response = $client->post('users', $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('User created.', 'user', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -102,14 +108,18 @@ class UserTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_users_update(int $id, string $name = '', string $email = '', array $roles = [], string $instance = ''): array
+	public function bookstack_users_update(int $id, string $name = '', string $email = '', array $roles = [], string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if (!empty($name)) $data['name'] = $name;
 		if (!empty($email)) $data['email'] = $email;
 		if (!empty($roles)) $data['roles'] = $roles;
-		return $client->put("users/{$id}", $data);
+		$response = $client->put("users/{$id}", $data);
+		return ToolResult::structured(
+			ResponseFormatter::mutationSummary('User updated.', 'user', $response),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -125,13 +135,17 @@ class UserTools
 			'required' => ['id', 'instance'],
 		]
 	)]
-	public function bookstack_users_delete(int $id, int $migrate_ownership_id = 0, string $instance = ''): array
+	public function bookstack_users_delete(int $id, int $migrate_ownership_id = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$path = "users/{$id}";
 		if ($migrate_ownership_id > 0) {
 			$path .= "?migrate_ownership_id={$migrate_ownership_id}";
 		}
-		return $client->delete($path);
+		$client->delete($path);
+		return ToolResult::structured(
+			ResponseFormatter::deleted('user', $id, false),
+			['id' => $id, 'deleted' => true]
+		);
 	}
 }

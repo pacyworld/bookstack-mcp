@@ -279,6 +279,50 @@ $out = ResponseFormatter::imageDetail($image);
 check('images_read: header', $out, '# screenshot [image, id: 9]');
 check('images_read: thumbs', $out, 'Display thumbnail: https://docs.example.com/thumb-d.png');
 
+// --- mutations (dual content markdown side) ---
+
+$createdPage = [
+	'id' => 71, 'name' => 'New Page', 'book_id' => 34,
+	'created_at' => '2026-09-06T06:00:00.000000Z', 'updated_at' => '2026-09-06T06:00:00.000000Z',
+];
+$out = ResponseFormatter::mutationSummary('Page created.', 'page', $createdPage);
+check('mutation: action line first', $out, 'Page created.');
+check('mutation: entity header', $out, '# New Page [page, id: 71]');
+check('mutation: date trimmed', $out, 'Created: 2026-09-06');
+checkNot('mutation: no microsecond timestamp', $out, 'T06:00:00');
+
+$out = ResponseFormatter::deleted('page', 71);
+check('deleted: header', $out, '# Deleted [page, id: 71]');
+check('deleted: recycle note', $out, 'recycle bin');
+$out = ResponseFormatter::deleted('image', 9, false);
+check('deleted: permanent note', $out, 'Permanently deleted.');
+
+// --- permissions ---
+
+$permissions = [
+	'owner' => ['id' => 3, 'name' => 'Cascade'],
+	'role_permissions' => [
+		['id' => 1, 'display_name' => 'Admin', 'view' => true, 'create' => true, 'update' => true, 'delete' => false],
+	],
+	'fallback_permissions' => ['active' => false, 'view' => null, 'create' => false],
+];
+$out = ResponseFormatter::permissionsDetail($permissions, 'page', 66);
+check('permissions: header', $out, '# Permissions [page, id: 66]');
+check('permissions: owner', $out, 'Owner: Cascade [id: 3]');
+check('permissions: role override flags', $out, '**Admin** [id: 1]: view=yes, create=yes, update=yes, delete=no');
+check('permissions: fallback active', $out, 'Fallback (all roles) active: no');
+check('permissions: fallback flag', $out, 'Fallback create: no');
+
+// --- system / instances ---
+
+$out = ResponseFormatter::systemInfo(['app_name' => 'Docs', 'base_url' => 'https://docs.example.com']);
+check('system_info: header', $out, '# BookStack System Info');
+check('system_info: key/value', $out, '- **app_name**: Docs');
+
+$out = ResponseFormatter::instanceList(['prod' => ['url' => 'https://docs.example.com', 'description' => 'Production wiki']]);
+check('instances: header', $out, '# Instances — 1 configured');
+check('instances: entry', $out, '- **prod** — https://docs.example.com (Production wiki)');
+
 // --- Summary ---
 
 echo "\nResults: {$pass} passed, {$fail} failed\n";

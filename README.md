@@ -130,14 +130,18 @@ Config file is searched in order:
 
 ## Output Format
 
-Read, list, and search tools return Markdown instead of raw JSON API responses:
+All tools use dual content output (MCP 2025-06-18): a human/LLM-readable
+Markdown `content` block accompanied by a machine-readable
+`structuredContent` payload carrying the underlying data. Older clients that
+only read `content` see Markdown; clients that understand structured output
+get the raw response data alongside it.
 
 - **Lists** — one line per item (`- [12] **Name** — description (updated 2026-05-31)`) with a `More results: call bookstack_*_list with offset=N` footer when additional results exist
 - **Search** — `## Title [page, id: 66]` sections with book › chapter breadcrumbs, `**highlighted**` snippets, and a `page=N+1` footer
 - **Pages** — Markdown body with a metadata header; the redundant HTML representation is omitted (available via `bookstack_pages_export format=html`). Pages authored in HTML return their HTML body with a plaintext export hint
 - **Books/chapters/shelves** — metadata header plus an indented content hierarchy
-
-Create/update/delete tools continue to return the raw JSON API response.
+- **Create/update** — a compact action confirmation with the entity header (e.g. `Page created.`); the full entity is in `structuredContent`
+- **Delete** — a deletion confirmation noting whether the item went to the recycle bin or was permanently removed
 
 ## Agent Skill
 

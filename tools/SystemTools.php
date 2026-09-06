@@ -9,6 +9,7 @@
  */
 
 use EnchiladaMCP\McpTool;
+use EnchiladaMCP\ToolResult;
 use BookStack\InstanceManager;
 use BookStack\ResponseFormatter;
 
@@ -33,10 +34,11 @@ class SystemTools
 			'required' => ['instance'],
 		]
 	)]
-	public function bookstack_system_info(string $instance = ''): array
+	public function bookstack_system_info(string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
-		return $client->get('');
+		$response = $client->get('');
+		return ToolResult::structured(ResponseFormatter::systemInfo(is_array($response) ? $response : ['raw' => $response]), is_array($response) ? $response : ['raw' => $response]);
 	}
 
 	#[McpTool(
@@ -53,11 +55,11 @@ class SystemTools
 			'required' => ['instance'],
 		]
 	)]
-	public function bookstack_audit_log(int $count = 20, int $offset = 0, string $instance = ''): string
+	public function bookstack_audit_log(int $count = 20, int $offset = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$response = $client->get('audit-log', ['count' => min($count, 500), 'offset' => $offset]);
-		return ResponseFormatter::auditLog($response, $offset);
+		return ToolResult::structured(ResponseFormatter::auditLog($response, $offset), $response);
 	}
 
 	#[McpTool(
@@ -74,11 +76,15 @@ class SystemTools
 			'required' => ['content_type', 'content_id', 'instance'],
 		]
 	)]
-	public function bookstack_permissions_read(string $content_type, int $content_id, string $instance = ''): array
+	public function bookstack_permissions_read(string $content_type, int $content_id, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$type = rtrim($content_type, 's') . 's';
-		return $client->get("content-permissions/{$content_type}/{$content_id}");
+		$response = $client->get("content-permissions/{$content_type}/{$content_id}");
+		return ToolResult::structured(
+			ResponseFormatter::permissionsDetail($response, rtrim($content_type, 's'), $content_id),
+			$response
+		);
 	}
 
 	#[McpTool(
@@ -95,11 +101,15 @@ class SystemTools
 			'required' => ['content_type', 'content_id', 'instance'],
 		]
 	)]
-	public function bookstack_permissions_update(string $content_type, int $content_id, int $owner_id = 0, string $instance = ''): array
+	public function bookstack_permissions_update(string $content_type, int $content_id, int $owner_id = 0, string $instance = ''): ToolResult
 	{
 		$client = $this->manager->getClient($instance);
 		$data = [];
 		if ($owner_id > 0) $data['owner_id'] = $owner_id;
-		return $client->put("content-permissions/{$content_type}/{$content_id}", $data);
+		$response = $client->put("content-permissions/{$content_type}/{$content_id}", $data);
+		return ToolResult::structured(
+			"Permissions updated.\n\n" . ResponseFormatter::permissionsDetail($response, rtrim($content_type, 's'), $content_id),
+			$response
+		);
 	}
 }
