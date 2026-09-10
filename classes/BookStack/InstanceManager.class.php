@@ -23,6 +23,12 @@ class InstanceManager
 	/** @var array<string,Client> Cache of Client instances indexed by name. */
 	private array $clients = [];
 
+	/** @var \Enchilada\Tortilla\EventLoop|null Event loop propagated to created Clients */
+	private ?\Enchilada\Tortilla\EventLoop $loop = null;
+
+	/** @var \Closure|null Progress emitter propagated to created Clients */
+	private ?\Closure $progress = null;
+
 	/**
 	 * Create a new InstanceManager.
 	 *
@@ -71,6 +77,22 @@ class InstanceManager
 	}
 
 	/**
+	 * Provide the HTTP transport context for subsequently created
+	 * Clients: the event loop the stdio transport also runs on (so
+	 * Tortilla\HttpClient fiber-park waits are driven by that loop's
+	 * timers) and the server's progress emitter (so blocking-mode poll
+	 * loops keep notifications/progress flowing during long API waits).
+	 *
+	 * @param \Enchilada\Tortilla\EventLoop|null $loop     Shared event loop, or null (blocking waits)
+	 * @param callable|null                      $progress function(): void progress emitter
+	 */
+	public function setHttpTransport(?\Enchilada\Tortilla\EventLoop $loop, ?callable $progress): void
+	{
+		$this->loop = $loop;
+		$this->progress = $progress !== null ? $progress(...) : null;
+	}
+
+	/**
 	 * Get a Client for the named instance.
 	 *
 	 * Clients are cached — the same Client instance is returned
@@ -108,7 +130,9 @@ class InstanceManager
 				$config['url'],
 				$config['token_id'],
 				$config['token_secret'],
-				$config['timeout'] ?? 30
+				$config['timeout'] ?? 30,
+				$this->loop,
+				$this->progress
 			);
 		}
 

@@ -22,7 +22,8 @@
 require_once dirname(__DIR__) . '/system/bootstrap.inc.php';
 
 use EnchiladaMCP\McpServer;
-use EnchiladaMCP\StdioTransport;
+use Enchilada\Tortilla\ComalEventLoop;
+use Enchilada\Tortilla\StdioTransport;
 use BookStack\InstanceManager;
 
 // --- Configuration ---
@@ -80,6 +81,14 @@ debug("Loaded {$instanceCount} instance(s) from {$configPath}");
 $server = new McpServer(APPLICATION_SLUG, APPLICATION_VERSION);
 $server->setInstructions('BookStack wiki management. Use bookstack_list_instances to see configured instances. The instance parameter is required on all tool calls.');
 
+// The application owns the event loop (strict opt-in): shared with
+// the stdio transport (reactor I/O) and the tools' HTTP path, where
+// Tortilla\HttpClient parks the dispatch fiber on it during BookStack
+// API waits. null without vendored Comal: blocking I/O, progress flow
+// via the HttpClient poll loop.
+$loop = ComalEventLoop::create();
+$manager->setHttpTransport($loop, $server->tick(...));
+
 // Implementation metadata (MCP 2025-11-25); strictly-older clients ignore
 // the extra serverInfo members. The icon is served from the repo so it can
 // evolve without a PHAR rebuild.
@@ -112,8 +121,14 @@ debug("MCP server started (stdio transport)");
 
 // --- Run ---
 
-$transport = new StdioTransport($server);
+// Primitives in (handler, progress emitter), notifier back out —
+// only the composition root knows both sides of the contract.
+$transport = new StdioTransport($server->handleRequest(...), $server->tick(...));
 $transport->setLogger('debug');
+if ($loop !== null) {
+    $transport->setLoop($loop);      // opts into reactor I/O
+}
+$server->setNotifier($transport->sendNotification(...));
 $transport->run();
 
 debug("MCP server stopped");
