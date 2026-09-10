@@ -3,7 +3,12 @@
  * BookStack MCP Server — API Client
  *
  * Thin HTTP client wrapping the BookStack REST API.
- * Uses EnchiladaHTTP for requests with token authentication.
+ * Uses Enchilada\Tortilla\HttpClient (loop-aware facade over
+ * EnchiladaMultiHTTP) for requests with token authentication. When an
+ * EventLoop is injected and the caller runs inside a transport dispatch
+ * fiber, API waits park the fiber instead of blocking the server;
+ * otherwise the client's poll loop keeps progress notifications flowing
+ * during long waits (Windows stdio).
  *
  * @package    BookstackMCP\BookStack
  * @author     Daniel Morante
@@ -13,10 +18,18 @@
 
 namespace BookStack;
 
+// EnchiladaMultiHTTP lives in the HTTP/ library directory but the
+// class name matches no vendored file or directory name, so the
+// framework autoloader's guess patterns miss it and spl_autoload
+// lowercases on case-sensitive filesystems.
+if (!class_exists('EnchiladaMultiHTTP', false)) {
+	require_once dirname(__DIR__, 2) . '/libraries/HTTP/EnchiladaMultiHTTP.class.php';
+}
+
 class Client
 {
-	/** @var \EnchiladaHTTP */
-	private \EnchiladaHTTP $http;
+	/** @var \Enchilada\Tortilla\HttpClient Loop-aware HTTP transport */
+	private \Enchilada\Tortilla\HttpClient $http;
 
 	/** @var array Auth headers passed with every request */
 	private array $authHeaders;
@@ -24,15 +37,21 @@ class Client
 	/**
 	 * Create a new BookStack API client.
 	 *
-	 * @param string $baseUrl     BookStack instance URL (no trailing slash)
-	 * @param string $tokenId     API token ID
-	 * @param string $tokenSecret API token secret
-	 * @param int    $timeout     Request timeout in seconds
+	 * @param string                             $baseUrl     BookStack instance URL (no trailing slash)
+	 * @param string                             $tokenId     API token ID
+	 * @param string                             $tokenSecret API token secret
+	 * @param int                                $timeout     Request timeout in seconds
+	 * @param \Enchilada\Tortilla\EventLoop|null $loop        Event loop shared with the stdio transport;
+	 *                                                        API waits park the dispatch fiber on it
+	 * @param callable|null                      $progress    function(): void — emits a progress
+	 *                                                        notification during blocking-mode API waits
 	 */
-	public function __construct(string $baseUrl, string $tokenId, string $tokenSecret, int $timeout = 30)
+	public function __construct(string $baseUrl, string $tokenId, string $tokenSecret, int $timeout = 30,
+		?\Enchilada\Tortilla\EventLoop $loop = null, ?callable $progress = null)
 	{
-		$this->http = new \EnchiladaHTTP(rtrim($baseUrl, '/') . '/api');
-		$this->http->setTimeout($timeout);
+		$multi = new \EnchiladaMultiHTTP(rtrim($baseUrl, '/') . '/api');
+		$multi->setTimeout($timeout);
+		$this->http = new \Enchilada\Tortilla\HttpClient($multi, $loop, $progress);
 		$this->authHeaders = ["Authorization: Token {$tokenId}:{$tokenSecret}"];
 	}
 
@@ -80,8 +99,9 @@ class Client
 	 * POST request with a real multipart/form-data body.
 	 *
 	 * For endpoints that expect an actual file upload (e.g. POST
-	 * image-gallery). Values may be scalars or \CURLFile instances;
-	 * cURL sets the Content-Type boundary automatically.
+	 * image-gallery). Values may be scalars or \CURLFile instances.
+	 * EnchiladaMultiHTTP has no 'multipart' wire format, so the body is
+	 * assembled here and sent raw with an explicit boundary header.
 	 *
 	 * @param  string $path   API path
 	 * @param  array  $fields Multipart form fields
@@ -89,13 +109,30 @@ class Client
 	 */
 	public function postMultipart(string $path, array $fields): array
 	{
-		// EnchiladaHTTP returns the raw response body for non-JSON formats,
-		// so decode the JSON body that BookStack still sends back.
-		$result = $this->http->call($path, $fields, 'POST', $this->authHeaders, null, 'multipart');
-		if ($result === false) {
+		$boundary = 'McpBoundary' . uniqid();
+		$body = '';
+		foreach ($fields as $name => $value) {
+			$body .= "--{$boundary}\r\n";
+			if ($value instanceof \CURLFile) {
+				$filename = $value->getPostFilename() !== '' ? $value->getPostFilename() : basename($value->getFilename());
+				$body .= "Content-Disposition: form-data; name=\"{$name}\"; filename=\"{$filename}\"\r\n";
+				if (($mime = $value->getMimeType()) !== '') {
+					$body .= "Content-Type: {$mime}\r\n";
+				}
+				$body .= "\r\n" . file_get_contents($value->getFilename());
+			} else {
+				$body .= "Content-Disposition: form-data; name=\"{$name}\"\r\n\r\n" . (string) $value;
+			}
+			$body .= "\r\n";
+		}
+		$body .= "--{$boundary}--\r\n";
+
+		$headers = array_merge($this->authHeaders, ["Content-Type: multipart/form-data; boundary={$boundary}"]);
+		$result = $this->http->call($path, $body, 'POST', $headers, null, 'raw');
+		if (!is_string($result) || $result === '') {
 			return $this->finish(false, $path);
 		}
-		$decoded = json_decode((string) $result, true);
+		$decoded = json_decode($result, true);
 		return $this->handleResponse($decoded ?? $result, $path);
 	}
 
@@ -123,14 +160,16 @@ class Client
 	 * request (403/404/5xx with an unreadable body) arrives the same way and
 	 * must not masquerade as success.
 	 *
-	 * @param  mixed  $result Result from EnchiladaHTTP::call()
+	 * @param  mixed  $result Result from HttpClient::call()
 	 * @param  string $path   API path (for error messages)
 	 * @return array|string
 	 * @throws \RuntimeException On failed requests
 	 */
 	private function finish(mixed $result, string $path): array|string
 	{
-		if ($result === false) {
+		// null is the transport-failure slot in curl_multi outcomes
+		// (EnchiladaHTTP surfaced the same case as false).
+		if ($result === false || $result === null) {
 			$code = $this->http->getHttpCode();
 			if ($code >= 200 && $code < 300) {
 				return [];
@@ -155,7 +194,7 @@ class Client
 	 */
 	private function handleResponse(mixed $response, string $path): array|string
 	{
-		if ($response === false) {
+		if ($response === false || $response === null) {
 			throw new \RuntimeException(sprintf(
 				'BookStack API request failed: %s (HTTP %d%s)',
 				$path,
