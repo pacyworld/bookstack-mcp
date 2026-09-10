@@ -148,7 +148,7 @@ try {
 	$inBin = false;
 	foreach ($bin['data'] ?? [] as $item) {
 		if ((int) ($item['deletable']['id'] ?? 0) === $pageId &&
-		    str_contains($item['deletable_type'] ?? '', 'Page')) {
+		    stripos($item['deletable_type'] ?? '', 'page') !== false) { // BookStack returns the short form ('page'), not the FQCN
 			$inBin = true;
 			$binId = (int) $item['id'];
 			break;
