@@ -10,7 +10,7 @@ jobs:
     runs-on: FreeBSD
     steps:
       - name: Checkout
-        run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b ${{ github.ref_name }}
+        run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b "${{ github.head_ref || github.ref_name }}"
 
       - name: Verify syntax
         run: |
