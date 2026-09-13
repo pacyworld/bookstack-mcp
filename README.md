@@ -128,6 +128,22 @@ Config file is searched in order:
 3. `~/.config/bookstack-mcp/instances.json`
 4. `/usr/local/etc/bookstack-mcp/instances.json`
 
+## Logging
+
+The server is **silent by default**: stdout carries only JSON-RPC protocol
+messages (required by MCP stdio clients) and stderr stays untouched — a
+host that pipes stderr but never reads it (seen with some MCP clients on
+Windows) would otherwise fill the pipe and stall the server.
+
+Diagnostics are opt-in:
+
+- `BOOKSTACK_MCP_LOG=/path/to/file.log` (or `--log=PATH`) — durable file logging
+- `BOOKSTACK_MCP_LOG_LEVEL=debug|info|error` (or `--log-level=LEVEL`; default: `debug`)
+- `BOOKSTACK_MCP_LOG_STDERR=1` — additionally mirror log lines to STDERR (limited to a small byte budget on platforms where stderr cannot be made non-blocking, e.g. Windows pipes)
+- `BOOKSTACK_MCP_IO_MODE=auto|reactor|blocking` (or `--io-mode=MODE`) — transport I/O strategy override, for transport diagnostics only
+
+Fatal startup errors (missing config, etc.) always go to STDERR.
+
 ## Output Format
 
 All tools use dual content output (MCP 2025-06-18): a human/LLM-readable
