@@ -345,7 +345,7 @@ class HelpTools
 				'steps' => [
 					['tool' => 'bookstack_roles_list', 'action' => 'Review available roles'],
 					['tool' => 'bookstack_users_create', 'action' => 'Create user accounts with roles'],
-					['tool' => 'bookstack_permissions_update', 'action' => 'Set content-level permissions'],
+					['tool' => 'bookstack_permissions_update', 'action' => 'Change content ownership'],
 				],
 			],
 			'search_content' => [
