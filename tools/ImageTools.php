@@ -32,7 +32,7 @@ class ImageTools
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
 				'sort' => ['type' => 'string', 'description' => 'name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'Required'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -51,7 +51,7 @@ class ImageTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -73,7 +73,7 @@ class ImageTools
 				'image' => ['type' => 'string', 'description' => 'Base64 image data'],
 				'uploaded_to' => ['type' => 'integer', 'description' => 'Associated page ID'],
 				'type' => ['type' => 'string', 'description' => 'gallery (default) or drawio'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'image', 'instance'],
 		]
@@ -127,7 +127,7 @@ class ImageTools
 			'properties' => [
 				'id' => ['type' => 'integer'],
 				'name' => ['type' => 'string'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -151,7 +151,7 @@ class ImageTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]

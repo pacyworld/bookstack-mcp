@@ -32,7 +32,7 @@ class ShelfTools
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
 				'sort' => ['type' => 'string', 'description' => 'name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'Required'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -51,7 +51,7 @@ class ShelfTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -72,7 +72,7 @@ class ShelfTools
 				'name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
 				'books' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Book IDs'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'instance'],
 		]
@@ -100,7 +100,7 @@ class ShelfTools
 				'name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
 				'books' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Book IDs; replaces the whole list'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -126,7 +126,7 @@ class ShelfTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]

@@ -35,7 +35,7 @@ class ChapterTools
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
 				'sort' => ['type' => 'string', 'description' => 'name (default), created_at, updated_at, priority'],
-				'instance' => ['type' => 'string', 'description' => 'Required'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -57,7 +57,7 @@ class ChapterTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -81,7 +81,7 @@ class ChapterTools
 				'book_id' => ['type' => 'integer'],
 				'name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['book_id', 'name', 'instance'],
 		]
@@ -113,7 +113,7 @@ class ChapterTools
 				'name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
 				'book_id' => ['type' => 'integer', 'description' => 'Target book to move the chapter to'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -142,7 +142,7 @@ class ChapterTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -169,7 +169,7 @@ class ChapterTools
 			'properties' => [
 				'id' => ['type' => 'integer'],
 				'format' => ['type' => 'string', 'description' => 'markdown or plaintext (best for LLMs), html, pdf'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'format', 'instance'],
 		]

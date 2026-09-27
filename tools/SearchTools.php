@@ -35,7 +35,7 @@ class SearchTools
 				'query' => ['type' => 'string', 'description' => 'Terms plus optional "exact phrase", {type:page|book|chapter|shelf}, {tag:name=value}, {created_by:me}'],
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 100'],
 				'page' => ['type' => 'integer', 'description' => 'default 1'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['query', 'instance'],
 		]

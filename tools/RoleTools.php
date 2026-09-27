@@ -31,7 +31,7 @@ class RoleTools
 			'properties' => [
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
-				'instance' => ['type' => 'string', 'description' => 'Required'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -50,7 +50,7 @@ class RoleTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -70,7 +70,7 @@ class RoleTools
 			'properties' => [
 				'display_name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['display_name', 'instance'],
 		]
@@ -96,7 +96,7 @@ class RoleTools
 				'id' => ['type' => 'integer'],
 				'display_name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -122,7 +122,7 @@ class RoleTools
 			'properties' => [
 				'id' => ['type' => 'integer'],
 				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'Role that receives this role\'s users'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]

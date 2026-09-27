@@ -32,7 +32,7 @@ class UserTools
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
 				'sort' => ['type' => 'string', 'description' => 'name, email, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'Required'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -51,7 +51,7 @@ class UserTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -74,7 +74,7 @@ class UserTools
 				'password' => ['type' => 'string', 'description' => 'Min 8 chars'],
 				'roles' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Role IDs'],
 				'send_invite' => ['type' => 'boolean', 'description' => 'Email an invitation (default false)'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'email', 'instance'],
 		]
@@ -103,7 +103,7 @@ class UserTools
 				'name' => ['type' => 'string'],
 				'email' => ['type' => 'string'],
 				'roles' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Role IDs; replaces existing roles'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -130,7 +130,7 @@ class UserTools
 			'properties' => [
 				'id' => ['type' => 'integer'],
 				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'User who inherits their content'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]

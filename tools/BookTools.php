@@ -35,7 +35,7 @@ class BookTools
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
 				'sort' => ['type' => 'string', 'description' => 'name (default), created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'Required'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -57,7 +57,7 @@ class BookTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -80,7 +80,7 @@ class BookTools
 			'properties' => [
 				'name' => ['type' => 'string'],
 				'description' => ['type' => 'string', 'description' => 'Plain text'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'instance'],
 		]
@@ -111,7 +111,7 @@ class BookTools
 				'id' => ['type' => 'integer'],
 				'name' => ['type' => 'string'],
 				'description' => ['type' => 'string'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -139,7 +139,7 @@ class BookTools
 			'type' => 'object',
 			'properties' => [
 				'id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -166,7 +166,7 @@ class BookTools
 			'properties' => [
 				'id' => ['type' => 'integer'],
 				'format' => ['type' => 'string', 'description' => 'markdown or plaintext (best for LLMs), html, pdf'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'format', 'instance'],
 		]

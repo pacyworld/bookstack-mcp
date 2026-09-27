@@ -29,7 +29,7 @@ class SystemTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['instance'],
 		]
@@ -50,7 +50,7 @@ class SystemTools
 			'properties' => [
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['instance'],
 		]
@@ -71,7 +71,7 @@ class SystemTools
 			'properties' => [
 				'content_type' => ['type' => 'string', 'description' => 'book, chapter, page, bookshelf'],
 				'content_id' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['content_type', 'content_id', 'instance'],
 		]
@@ -96,7 +96,7 @@ class SystemTools
 				'content_type' => ['type' => 'string', 'description' => 'book, chapter, page, bookshelf'],
 				'content_id' => ['type' => 'integer'],
 				'owner_id' => ['type' => 'integer', 'description' => 'New owner user ID'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['content_type', 'content_id', 'instance'],
 		]

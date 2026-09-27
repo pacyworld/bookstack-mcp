@@ -31,7 +31,7 @@ class RecycleBinTools
 			'properties' => [
 				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
 				'offset' => ['type' => 'integer'],
-				'instance' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['instance'],
 		]
@@ -49,8 +49,8 @@ class RecycleBinTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'Deletion ID from the recycle bin list, NOT the entity ID'],
-				'instance' => ['type' => 'string'],
+				'id' => ['type' => 'integer', 'description' => 'Deletion ID from bookstack_recyclebin_list, NOT the entity ID'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -72,8 +72,8 @@ class RecycleBinTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'Deletion ID, NOT the entity ID'],
-				'instance' => ['type' => 'string'],
+				'id' => ['type' => 'integer', 'description' => 'Deletion ID from bookstack_recyclebin_list, NOT the entity ID'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
