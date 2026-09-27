@@ -27,15 +27,15 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_list',
-		description: 'List all books visible to the authenticated user. Books are the top-level containers in BookStack. Returns a Markdown list with id, name, description, and a pagination hint when more results exist.',
+		description: 'List books (top-level containers) with id, name, description.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of books to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Number of books to skip for pagination'],
-				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'sort' => ['type' => 'string', 'description' => 'name (default), created_at, updated_at'],
+				'instance' => ['type' => 'string', 'description' => 'Required'],
 			],
 		]
 	)]
@@ -51,13 +51,13 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_read',
-		description: 'Get details of a specific book including its complete content hierarchy (chapters and pages) as Markdown. Use this to explore what is inside a book.',
+		description: 'Get a book with its full chapter/page hierarchy.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The unique ID of the book'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -74,13 +74,13 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_create',
-		description: 'Create a new book. Books are the top-level containers for chapters and pages.',
+		description: 'Create a book.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'name' => ['type' => 'string', 'description' => 'The name of the book'],
-				'description' => ['type' => 'string', 'description' => 'Plain text description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'name' => ['type' => 'string'],
+				'description' => ['type' => 'string', 'description' => 'Plain text'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['name', 'instance'],
 		]
@@ -104,14 +104,14 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_update',
-		description: 'Update a book\'s name, description, or tags.',
+		description: 'Update a book\'s name or description.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the book to update'],
-				'name' => ['type' => 'string', 'description' => 'New book name'],
-				'description' => ['type' => 'string', 'description' => 'New description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -134,12 +134,12 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_delete',
-		description: 'Delete a book. Moves the book and all its contents to the recycle bin.',
+		description: 'Move a book and all its contents to the recycle bin.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the book to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -159,14 +159,14 @@ class BookTools
 	 */
 	#[McpTool(
 		name: 'bookstack_books_export',
-		description: 'Export a book to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		description: 'Export a whole book.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the book to export'],
-				'format' => ['type' => 'string', 'description' => 'Export format: html, pdf, plaintext, markdown'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'format' => ['type' => 'string', 'description' => 'markdown or plaintext (best for LLMs), html, pdf'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'format', 'instance'],
 		]

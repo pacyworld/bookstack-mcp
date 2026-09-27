@@ -23,7 +23,7 @@ class HelpTools
 
 	#[McpTool(
 		name: 'bookstack_server_info',
-		description: 'Get information about this BookStack MCP server including version, capabilities, and configured instances.',
+		description: 'Server version, configured instances and tool categories.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
@@ -42,7 +42,7 @@ class HelpTools
 				'media' => 'attachments, images — manage file assets',
 				'search' => 'full-text search across all content types',
 				'admin' => 'users, roles, permissions, audit log, recycle bin',
-				'system' => 'instance info, instance switching',
+				'system' => 'instance info, configured instances',
 			],
 			'api_docs' => 'https://demo.bookstackapp.com/api/docs',
 			'response_format' => 'Markdown text with a structuredContent JSON payload (MCP 2025-06-18 dual content)',
@@ -72,12 +72,12 @@ class HelpTools
 
 	#[McpTool(
 		name: 'bookstack_help',
-		description: 'Get context-aware help on how to use BookStack MCP tools.',
+		description: 'Short how-to guides for these tools.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'topic' => ['type' => 'string', 'description' => 'Topic: getting_started, content_creation, search, user_management, multi_instance, best_practices'],
+				'topic' => ['type' => 'string', 'description' => 'getting_started (default), content_creation, search, user_management, multi_instance, best_practices'],
 			],
 		]
 	)]
@@ -87,58 +87,55 @@ class HelpTools
 			'getting_started' => [
 				'title' => 'Getting Started',
 				'steps' => [
-					'1. Use bookstack_list_instances to see configured BookStack instances',
-					'2. Use bookstack_books_list to browse available books',
-					'3. Use bookstack_books_read to explore a book\'s chapters and pages',
-					'4. Use bookstack_pages_read to get full page content',
-					'5. Use bookstack_search to find content across all types',
+					'1. bookstack_list_instances: pick an instance (required on every call)',
+					'2. bookstack_books_list: browse books',
+					'3. bookstack_books_read: a book\'s chapters and pages',
+					'4. bookstack_pages_read: full page content',
+					'5. bookstack_search: find content of any type',
 				],
 			],
 			'content_creation' => [
 				'title' => 'Creating Content',
 				'steps' => [
-					'1. Create a book with bookstack_books_create',
-					'2. Optionally create chapters with bookstack_chapters_create',
-					'3. Create pages with bookstack_pages_create (prefer Markdown over HTML)',
-					'4. Attach files with bookstack_attachments_create',
-					'5. Upload images with bookstack_images_create (base64 encoded)',
+					'1. bookstack_books_create: the container',
+					'2. bookstack_chapters_create: optional grouping',
+					'3. bookstack_pages_create: content (Markdown preferred)',
+					'4. bookstack_attachments_create: link external URLs to a page',
+					'5. bookstack_images_create: upload base64 images',
 				],
-				'tip' => 'Always use Markdown format when creating/updating pages — it is more token-efficient than HTML.',
+				'tip' => 'Write pages in Markdown; it is more token-efficient than HTML.',
 			],
 			'search' => [
 				'title' => 'Searching Content',
 				'syntax' => [
-					'"exact phrase" — search for exact text',
-					'{type:page} — filter by content type (page, book, chapter, shelf)',
-					'{tag:name=value} — filter by tag',
-					'{created_by:me} — filter by creator',
+					'"exact phrase"',
+					'{type:page} — page, book, chapter or shelf',
+					'{tag:name=value}',
+					'{created_by:me}',
 				],
-				'tip' => 'Search results contain snippets only. Use bookstack_pages_read with the page ID for full content.',
+				'tip' => 'Results are snippets; read full pages with bookstack_pages_read.',
 			],
 			'user_management' => [
 				'title' => 'User Management',
 				'steps' => [
-					'Use bookstack_users_list to see all users',
-					'Use bookstack_roles_list to see available roles',
-					'Create users with bookstack_users_create (assign roles)',
-					'When deleting users, use migrate_ownership_id to transfer their content',
+					'bookstack_users_list / bookstack_roles_list: current users and roles',
+					'bookstack_users_create: pass role IDs',
+					'bookstack_users_delete: pass migrate_ownership_id to keep their content',
 				],
 			],
 			'multi_instance' => [
 				'title' => 'Multi-Instance Management',
 				'steps' => [
-					'Use bookstack_list_instances to see all configured instances',
-					'Pass instance parameter to every tool call — it is required',
+					'bookstack_list_instances: configured instances',
 				],
-				'tip' => 'The instance parameter is required on all tools. There is no default instance.',
+				'tip' => 'Pass instance on every call; there is no default instance.',
 			],
 			'best_practices' => [
 				'title' => 'Best Practices',
 				'tips' => [
-					'Use Markdown format for content — more token-efficient than HTML',
-					'Use bookstack_pages_export with format=markdown to read content efficiently',
-					'Always read a page before updating — updates replace content entirely',
-					'Use bookstack_books_export to get all content from a book at once',
+					'Write Markdown, not HTML (fewer tokens)',
+					'Read a page before updating it: updates replace the whole content',
+					'bookstack_books_export gets a whole book in one call',
 					'Check the recycle bin before reporting content as missing',
 				],
 			],
@@ -166,12 +163,12 @@ class HelpTools
 
 	#[McpTool(
 		name: 'bookstack_error_guide',
-		description: 'Get information about common error codes and how to resolve them.',
+		description: 'Causes and fixes for BookStack API errors.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'error_code' => ['type' => 'string', 'description' => 'Error code or keyword: UNAUTHORIZED, NOT_FOUND, VALIDATION_ERROR, FORBIDDEN'],
+				'error_code' => ['type' => 'string', 'description' => 'UNAUTHORIZED, NOT_FOUND, VALIDATION_ERROR, FORBIDDEN; omit to list'],
 			],
 		]
 	)]
@@ -233,12 +230,12 @@ class HelpTools
 
 	#[McpTool(
 		name: 'bookstack_tool_categories',
-		description: 'Get a list of tool categories and their descriptions.',
+		description: 'List tool categories, or the tools in one category.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'category' => ['type' => 'string', 'description' => 'Specific category: books, pages, chapters, shelves, attachments, images, users, roles, search, system, recyclebin'],
+				'category' => ['type' => 'string', 'description' => 'books, pages, chapters, shelves, attachments, images, users, roles, search, system'],
 			],
 		]
 	)]
@@ -313,12 +310,12 @@ class HelpTools
 
 	#[McpTool(
 		name: 'bookstack_usage_examples',
-		description: 'Get common workflow examples for BookStack operations.',
+		description: 'Tool sequences for common workflows.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'workflow' => ['type' => 'string', 'description' => 'Workflow: create_documentation, organize_content, user_management, search_content, export_data'],
+				'workflow' => ['type' => 'string', 'description' => 'create_documentation, organize_content, user_management, search_content, export_data; omit to list'],
 			],
 		]
 	)]
@@ -366,7 +363,7 @@ class HelpTools
 					['tool' => 'bookstack_chapters_export', 'action' => 'Export a single chapter'],
 					['tool' => 'bookstack_pages_export', 'action' => 'Export individual pages'],
 				],
-				'tip' => 'Use "markdown" or "plaintext" format for LLM context injection — more token-efficient than HTML.',
+				'tip' => 'markdown or plaintext exports cost fewer tokens than html.',
 			],
 		];
 

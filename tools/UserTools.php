@@ -24,15 +24,15 @@ class UserTools
 
 	#[McpTool(
 		name: 'bookstack_users_list',
-		description: 'List all users.',
+		description: 'List users.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of users to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'sort' => ['type' => 'string', 'description' => 'Sort field: name, email, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'sort' => ['type' => 'string', 'description' => 'name, email, created_at, updated_at'],
+				'instance' => ['type' => 'string', 'description' => 'Required'],
 			],
 		]
 	)]
@@ -45,13 +45,13 @@ class UserTools
 
 	#[McpTool(
 		name: 'bookstack_users_read',
-		description: 'Get details of a specific user, including their assigned roles.',
+		description: 'Get a user and their roles.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the user'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -65,16 +65,16 @@ class UserTools
 
 	#[McpTool(
 		name: 'bookstack_users_create',
-		description: 'Create a new user account.',
+		description: 'Create a user account.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
 				'name' => ['type' => 'string', 'description' => 'Display name'],
-				'email' => ['type' => 'string', 'description' => 'Email address (must be unique)'],
-				'password' => ['type' => 'string', 'description' => 'Initial password (min 8 chars)'],
-				'roles' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'List of role IDs to assign'],
-				'send_invite' => ['type' => 'boolean', 'description' => 'Send email invitation (default false)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'email' => ['type' => 'string', 'description' => 'Must be unique'],
+				'password' => ['type' => 'string', 'description' => 'Min 8 chars'],
+				'roles' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Role IDs'],
+				'send_invite' => ['type' => 'boolean', 'description' => 'Email an invitation (default false)'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['name', 'email', 'instance'],
 		]
@@ -95,15 +95,15 @@ class UserTools
 
 	#[McpTool(
 		name: 'bookstack_users_update',
-		description: 'Update a user\'s profile or roles.',
+		description: 'Update a user\'s name, email or roles.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the user to update'],
-				'name' => ['type' => 'string', 'description' => 'New display name'],
-				'email' => ['type' => 'string', 'description' => 'New email'],
-				'roles' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'New role IDs (replaces existing)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'email' => ['type' => 'string'],
+				'roles' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Role IDs; replaces existing roles'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -124,13 +124,13 @@ class UserTools
 
 	#[McpTool(
 		name: 'bookstack_users_delete',
-		description: 'Delete a user account. Optionally transfer their content to another user.',
+		description: 'Delete a user account.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the user to delete'],
-				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'ID of user to inherit content'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'User who inherits their content'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]

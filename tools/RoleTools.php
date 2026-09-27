@@ -24,14 +24,14 @@ class RoleTools
 
 	#[McpTool(
 		name: 'bookstack_roles_list',
-		description: 'List all user roles. Roles define what actions users can perform.',
+		description: 'List user roles.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of roles to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required'],
 			],
 		]
 	)]
@@ -44,13 +44,13 @@ class RoleTools
 
 	#[McpTool(
 		name: 'bookstack_roles_read',
-		description: 'Get details of a specific role, including its permissions.',
+		description: 'Get a role and its permissions.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the role'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -64,13 +64,13 @@ class RoleTools
 
 	#[McpTool(
 		name: 'bookstack_roles_create',
-		description: 'Create a new user role with specific permissions.',
+		description: 'Create a user role.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'display_name' => ['type' => 'string', 'description' => 'Name of the role'],
-				'description' => ['type' => 'string', 'description' => 'Short description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'display_name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['display_name', 'instance'],
 		]
@@ -89,14 +89,14 @@ class RoleTools
 
 	#[McpTool(
 		name: 'bookstack_roles_update',
-		description: 'Update a role\'s name, description, or permissions.',
+		description: 'Update a role\'s display name or description.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the role to update'],
-				'display_name' => ['type' => 'string', 'description' => 'New display name'],
-				'description' => ['type' => 'string', 'description' => 'New description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'display_name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -116,13 +116,13 @@ class RoleTools
 
 	#[McpTool(
 		name: 'bookstack_roles_delete',
-		description: 'Delete a role. Optionally migrate users to another role.',
+		description: 'Delete a role.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the role to delete'],
-				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'ID of another role to move assigned users to'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'migrate_ownership_id' => ['type' => 'integer', 'description' => 'Role that receives this role\'s users'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]

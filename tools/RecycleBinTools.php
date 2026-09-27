@@ -24,14 +24,14 @@ class RecycleBinTools
 
 	#[McpTool(
 		name: 'bookstack_recyclebin_list',
-		description: 'List items currently in the recycle bin. Use to find deletion_id for restoration.',
+		description: 'List recycle bin items with their deletion IDs (needed to restore or destroy).',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of items to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['instance'],
 		]
@@ -45,12 +45,12 @@ class RecycleBinTools
 
 	#[McpTool(
 		name: 'bookstack_recyclebin_restore',
-		description: 'Restore a deleted item from the recycle bin to its previous location.',
+		description: 'Restore a recycle bin item to its previous location.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The deletion_id of the item to restore (from recyclebin_list, NOT the original entity ID)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer', 'description' => 'Deletion ID from the recycle bin list, NOT the entity ID'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -68,12 +68,12 @@ class RecycleBinTools
 
 	#[McpTool(
 		name: 'bookstack_recyclebin_destroy',
-		description: 'Permanently delete an item from the recycle bin. This is destructive and cannot be undone.',
+		description: 'Permanently destroy a recycle bin item. Cannot be undone.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The deletion_id of the item to permanently destroy'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer', 'description' => 'Deletion ID, NOT the entity ID'],
+				'instance' => ['type' => 'string'],
 			],
 			'required' => ['id', 'instance'],
 		]
