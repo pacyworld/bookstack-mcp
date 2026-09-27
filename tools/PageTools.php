@@ -27,15 +27,15 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_list',
-		description: 'List all pages visible to the authenticated user with pagination and filtering. Returns a Markdown list with id, name, parent book/chapter, and a pagination hint when more results exist.',
+		description: 'List pages with id, name, parent book/chapter.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of pages to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Number of pages to skip for pagination'],
-				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'sort' => ['type' => 'string', 'description' => 'name, created_at, updated_at'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -51,13 +51,13 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_read',
-		description: 'Get the full content of a page as Markdown with a metadata header (book/chapter breadcrumb, tags, dates). Pages authored in HTML return their HTML body instead. Raw HTML is also available via bookstack_pages_export format=html.',
+		description: 'Get a page\'s full content as Markdown (HTML body for HTML-authored pages) with breadcrumb, tags and dates.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The unique ID of the page'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -74,16 +74,16 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_create',
-		description: 'Create a new page. Provide content in Markdown (preferred) or HTML. Must specify a parent book_id or chapter_id.',
+		description: 'Create a page. Give book_id or chapter_id, and markdown (preferred) or html, not both.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'name' => ['type' => 'string', 'description' => 'Title of the page'],
-				'book_id' => ['type' => 'integer', 'description' => 'Parent book ID (required if chapter_id not provided)'],
-				'chapter_id' => ['type' => 'integer', 'description' => 'Parent chapter ID (required if book_id not provided)'],
-				'markdown' => ['type' => 'string', 'description' => 'Page content in Markdown (preferred for LLM generation)'],
-				'html' => ['type' => 'string', 'description' => 'Page content in HTML (use this OR markdown, not both)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'name' => ['type' => 'string'],
+				'book_id' => ['type' => 'integer'],
+				'chapter_id' => ['type' => 'integer'],
+				'markdown' => ['type' => 'string'],
+				'html' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'instance'],
 		]
@@ -108,15 +108,15 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_update',
-		description: 'Update a page\'s content or properties. Always read the page first if you intend to modify partially, as this replaces the content field entirely.',
+		description: 'Update a page\'s name and/or content. New content REPLACES the whole page, so read it first for partial edits.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the page to update'],
-				'name' => ['type' => 'string', 'description' => 'New page name'],
-				'markdown' => ['type' => 'string', 'description' => 'New Markdown content (replaces existing)'],
-				'html' => ['type' => 'string', 'description' => 'New HTML content (replaces existing)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'markdown' => ['type' => 'string'],
+				'html' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -144,8 +144,8 @@ class PageTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the page to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -165,14 +165,14 @@ class PageTools
 	 */
 	#[McpTool(
 		name: 'bookstack_pages_export',
-		description: 'Export a page to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		description: 'Export a page (e.g. raw HTML with format=html).',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the page to export'],
-				'format' => ['type' => 'string', 'description' => 'Export format: html, pdf, plaintext, markdown'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'format' => ['type' => 'string', 'description' => 'markdown or plaintext (best for LLMs), html, pdf'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'format', 'instance'],
 		]

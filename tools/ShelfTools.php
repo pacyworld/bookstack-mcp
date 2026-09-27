@@ -24,15 +24,15 @@ class ShelfTools
 
 	#[McpTool(
 		name: 'bookstack_shelves_list',
-		description: 'List all bookshelves. Shelves organize books into collections. Returns a Markdown list with a pagination hint when more results exist.',
+		description: 'List shelves (collections of books).',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of shelves to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'sort' => ['type' => 'string', 'description' => 'name, created_at, updated_at'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -45,13 +45,13 @@ class ShelfTools
 
 	#[McpTool(
 		name: 'bookstack_shelves_read',
-		description: 'Get details of a specific bookshelf as Markdown, including the list of books assigned to it.',
+		description: 'Get a shelf and its books.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The unique ID of the shelf'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -65,14 +65,14 @@ class ShelfTools
 
 	#[McpTool(
 		name: 'bookstack_shelves_create',
-		description: 'Create a new bookshelf to group related books.',
+		description: 'Create a shelf.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'name' => ['type' => 'string', 'description' => 'Name of the shelf'],
-				'description' => ['type' => 'string', 'description' => 'Short description'],
-				'books' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'List of book IDs to include'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'books' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Book IDs'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'instance'],
 		]
@@ -92,15 +92,15 @@ class ShelfTools
 
 	#[McpTool(
 		name: 'bookstack_shelves_update',
-		description: 'Update a bookshelf\'s name, description, or book list.',
+		description: 'Update a shelf\'s name, description or books.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the shelf to update'],
-				'name' => ['type' => 'string', 'description' => 'New shelf name'],
-				'description' => ['type' => 'string', 'description' => 'New description'],
-				'books' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'New list of book IDs (replaces all)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'books' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'Book IDs; replaces the whole list'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -121,12 +121,12 @@ class ShelfTools
 
 	#[McpTool(
 		name: 'bookstack_shelves_delete',
-		description: 'Delete a bookshelf. This only removes the shelf container; books remain safe.',
+		description: 'Delete a shelf; its books are kept.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the shelf to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]

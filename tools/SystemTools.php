@@ -24,12 +24,12 @@ class SystemTools
 
 	#[McpTool(
 		name: 'bookstack_system_info',
-		description: 'Get BookStack instance information including version, base URL, and app name.',
+		description: 'BookStack version, base URL and app name of an instance.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['instance'],
 		]
@@ -43,14 +43,14 @@ class SystemTools
 
 	#[McpTool(
 		name: 'bookstack_audit_log',
-		description: 'Retrieve the audit log to see recent activities on the instance.',
+		description: 'Recent activity from the audit log.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of entries to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['instance'],
 		]
@@ -64,14 +64,14 @@ class SystemTools
 
 	#[McpTool(
 		name: 'bookstack_permissions_read',
-		description: 'Check permissions for a specific content item (book, chapter, page, or shelf).',
+		description: 'Get the permission settings of a book, chapter, page or shelf.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'content_type' => ['type' => 'string', 'description' => 'Entity type: book, chapter, page, bookshelf'],
-				'content_id' => ['type' => 'integer', 'description' => 'ID of the entity'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'content_type' => ['type' => 'string', 'description' => 'book, chapter, page, bookshelf'],
+				'content_id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['content_type', 'content_id', 'instance'],
 		]
@@ -89,14 +89,14 @@ class SystemTools
 
 	#[McpTool(
 		name: 'bookstack_permissions_update',
-		description: 'Set custom permissions for a specific content item. Overrides default role-based access.',
+		description: 'Update a content item\'s permission settings; currently only its owner (owner_id).',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'content_type' => ['type' => 'string', 'description' => 'Entity type: book, chapter, page, bookshelf'],
-				'content_id' => ['type' => 'integer', 'description' => 'ID of the entity'],
-				'owner_id' => ['type' => 'integer', 'description' => 'New owner user ID (optional)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'content_type' => ['type' => 'string', 'description' => 'book, chapter, page, bookshelf'],
+				'content_id' => ['type' => 'integer'],
+				'owner_id' => ['type' => 'integer', 'description' => 'New owner user ID'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['content_type', 'content_id', 'instance'],
 		]

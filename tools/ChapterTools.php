@@ -27,15 +27,15 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_list',
-		description: 'List all chapters visible to the authenticated user. Returns a Markdown list with id, name, parent book, and a pagination hint when more results exist.',
+		description: 'List chapters with id, name, parent book.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of chapters to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Number of chapters to skip for pagination'],
-				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at, priority'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'sort' => ['type' => 'string', 'description' => 'name (default), created_at, updated_at, priority'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -51,13 +51,13 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_read',
-		description: 'Get details of a specific chapter as Markdown, including a list of pages contained within it.',
+		description: 'Get a chapter and the list of its pages.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The unique ID of the chapter'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -74,14 +74,14 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_create',
-		description: 'Create a new chapter within a book.',
+		description: 'Create a chapter in a book.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'book_id' => ['type' => 'integer', 'description' => 'ID of the book to contain this chapter'],
-				'name' => ['type' => 'string', 'description' => 'Name of the chapter'],
-				'description' => ['type' => 'string', 'description' => 'Short description'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'book_id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['book_id', 'name', 'instance'],
 		]
@@ -105,15 +105,15 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_update',
-		description: 'Update a chapter\'s name, description, or move it to a different book.',
+		description: 'Update a chapter\'s name or description, or move it to another book.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the chapter to update'],
-				'name' => ['type' => 'string', 'description' => 'New chapter name'],
-				'description' => ['type' => 'string', 'description' => 'New description'],
-				'book_id' => ['type' => 'integer', 'description' => 'New parent book ID (to move the chapter)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'description' => ['type' => 'string'],
+				'book_id' => ['type' => 'integer', 'description' => 'Target book to move the chapter to'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -137,12 +137,12 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_delete',
-		description: 'Delete a chapter and all its pages (moved to recycle bin).',
+		description: 'Move a chapter and all its pages to the recycle bin.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the chapter to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -162,14 +162,14 @@ class ChapterTools
 	 */
 	#[McpTool(
 		name: 'bookstack_chapters_export',
-		description: 'Export a chapter to a specific format. Use "markdown" or "plaintext" for LLM-friendly output.',
+		description: 'Export a whole chapter.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the chapter to export'],
-				'format' => ['type' => 'string', 'description' => 'Export format: html, pdf, plaintext, markdown'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'format' => ['type' => 'string', 'description' => 'markdown or plaintext (best for LLMs), html, pdf'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'format', 'instance'],
 		]

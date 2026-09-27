@@ -27,15 +27,15 @@ class SearchTools
 	 */
 	#[McpTool(
 		name: 'bookstack_search',
-		description: 'Search across all BookStack content. Supports advanced syntax: "exact phrase", {type:page|book|chapter|shelf}, {tag:name=value}, {created_by:me}. Returns Markdown-formatted results with breadcrumbs and highlighted snippets — snippets only, use bookstack_pages_read for full content. A footer indicates when more result pages exist.',
+		description: 'Search all content. Returns breadcrumbs and snippets only; read full pages with bookstack_pages_read.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'query' => ['type' => 'string', 'description' => 'Search query string with optional advanced syntax'],
-				'count' => ['type' => 'integer', 'description' => 'Results per page (default 20, max 100)'],
-				'page' => ['type' => 'integer', 'description' => 'Page number for pagination (default 1)'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'query' => ['type' => 'string', 'description' => 'Terms plus optional "exact phrase", {type:page|book|chapter|shelf}, {tag:name=value}, {created_by:me}'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 100'],
+				'page' => ['type' => 'integer', 'description' => 'default 1'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['query', 'instance'],
 		]

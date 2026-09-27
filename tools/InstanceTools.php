@@ -27,7 +27,7 @@ class InstanceTools
 	 */
 	#[McpTool(
 		name: 'bookstack_list_instances',
-		description: 'List all configured BookStack instances.',
+		description: 'List configured BookStack instances (instance is required on every other call).',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',

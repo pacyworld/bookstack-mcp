@@ -24,14 +24,14 @@ class AttachmentTools
 
 	#[McpTool(
 		name: 'bookstack_attachments_list',
-		description: 'List all attachments visible to the authenticated user.',
+		description: 'List attachments.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of attachments to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -44,13 +44,13 @@ class AttachmentTools
 
 	#[McpTool(
 		name: 'bookstack_attachments_read',
-		description: 'Get details of a specific attachment, including its download URL.',
+		description: 'Get an attachment, including its download URL.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The unique ID of the attachment'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -64,14 +64,14 @@ class AttachmentTools
 
 	#[McpTool(
 		name: 'bookstack_attachments_create',
-		description: 'Create a new attachment by linking to an external URL. Attach it to a page.',
+		description: 'Attach an external URL link to a page.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'name' => ['type' => 'string', 'description' => 'Name of the attachment'],
-				'uploaded_to' => ['type' => 'integer', 'description' => 'ID of the page to attach to'],
-				'link' => ['type' => 'string', 'description' => 'External URL to link'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'name' => ['type' => 'string'],
+				'uploaded_to' => ['type' => 'integer', 'description' => 'Page ID'],
+				'link' => ['type' => 'string', 'description' => 'External URL'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'uploaded_to', 'link', 'instance'],
 		]
@@ -92,10 +92,10 @@ class AttachmentTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the attachment to update'],
-				'name' => ['type' => 'string', 'description' => 'New name'],
-				'link' => ['type' => 'string', 'description' => 'New external URL'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'link' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -119,8 +119,8 @@ class AttachmentTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the attachment to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]

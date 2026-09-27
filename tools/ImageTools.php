@@ -24,15 +24,15 @@ class ImageTools
 
 	#[McpTool(
 		name: 'bookstack_images_list',
-		description: 'List all images in the gallery.',
+		description: 'List gallery images.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'count' => ['type' => 'integer', 'description' => 'Number of images to return (default 20, max 500)'],
-				'offset' => ['type' => 'integer', 'description' => 'Pagination offset'],
-				'sort' => ['type' => 'string', 'description' => 'Sort field: name, created_at, updated_at'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'count' => ['type' => 'integer', 'description' => 'default 20, max 500'],
+				'offset' => ['type' => 'integer'],
+				'sort' => ['type' => 'string', 'description' => 'name, created_at, updated_at'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 		]
 	)]
@@ -45,13 +45,13 @@ class ImageTools
 
 	#[McpTool(
 		name: 'bookstack_images_read',
-		description: 'Get details of a specific image, including its display URL and thumbnail URLs.',
+		description: 'Get an image with its display and thumbnail URLs.',
 		readOnlyHint: true,
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'The unique ID of the image'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -65,15 +65,15 @@ class ImageTools
 
 	#[McpTool(
 		name: 'bookstack_images_create',
-		description: 'Upload a new image to the gallery. Provide base64-encoded image content.',
+		description: 'Upload an image to the gallery.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'name' => ['type' => 'string', 'description' => 'Image title'],
-				'image' => ['type' => 'string', 'description' => 'Base64 encoded image content'],
-				'uploaded_to' => ['type' => 'integer', 'description' => 'Page ID this image is associated with'],
-				'type' => ['type' => 'string', 'description' => 'Image type: gallery (default) or drawio'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'name' => ['type' => 'string'],
+				'image' => ['type' => 'string', 'description' => 'Base64 image data'],
+				'uploaded_to' => ['type' => 'integer', 'description' => 'Associated page ID'],
+				'type' => ['type' => 'string', 'description' => 'gallery (default) or drawio'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['name', 'image', 'instance'],
 		]
@@ -125,9 +125,9 @@ class ImageTools
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the image to update'],
-				'name' => ['type' => 'string', 'description' => 'New title'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'name' => ['type' => 'string'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
@@ -146,12 +146,12 @@ class ImageTools
 
 	#[McpTool(
 		name: 'bookstack_images_delete',
-		description: 'Permanently delete an image from the gallery.',
+		description: 'Permanently delete a gallery image.',
 		inputSchema: [
 			'type' => 'object',
 			'properties' => [
-				'id' => ['type' => 'integer', 'description' => 'ID of the image to delete'],
-				'instance' => ['type' => 'string', 'description' => 'BookStack instance name'],
+				'id' => ['type' => 'integer'],
+				'instance' => ['type' => 'string', 'description' => 'Required BookStack instance name (no default; see bookstack_list_instances)'],
 			],
 			'required' => ['id', 'instance'],
 		]
