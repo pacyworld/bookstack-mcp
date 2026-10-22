@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-22
+
 ### Changed
 
 - Re-vendored the Enchilada libraries in `libraries/` onto the
