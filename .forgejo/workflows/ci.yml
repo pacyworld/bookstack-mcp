@@ -13,7 +13,7 @@ jobs:
         run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b "${{ github.head_ref || github.ref_name }}"
 
       - name: Install PHP extensions
-        run: pkg install -y php84-curl php84-tokenizer
+        run: doas pkg install -y php84-curl php84-tokenizer
 
       - name: Verify syntax
         run: |
