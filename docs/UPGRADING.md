@@ -13,8 +13,9 @@ consumer's tree):
 |---|---|---|
 | `libraries/EnchiladaMCP/` | `Enchilada/Extras` MCP/ | Protocol core. No I/O, no loop, no framework deps. |
 | `libraries/Enchilada/Tortilla/` | `Enchilada/Tortilla` src/ | Wire transports, `EventLoop` port, `HttpClient`, `RequestEra`. |
-| `libraries/EnchiladaHTTP/` | Extras HTTP/ | Blocking engine (legacy global class). **Frozen.** |
-| `libraries/EnchiladaMultiHTTP/` | Extras HTTP/ | curl_multi engine (legacy global class). **Frozen.** |
+| `libraries/EnchiladaCurl/` + `libraries/EnchiladaMultiHTTP/` + `libraries/EnchiladaWorkerHTTP/` | Extras HTTP/ | curl clients on the abstract `EnchiladaCurl` base (legacy globals, eponymous dirs); vendor all three together with Tortilla. |
+| `libraries/EnchiladaHTTP/` | Extras HTTP/ | Standalone blocking client. |
+| `tests/enchilada-curl/` | `daniel/engineering-docs` enchilada-extras/curl-behaviour-suite/ | curl behaviour suite + one-door-to-curl lint, run in CI against libraries/. Re-vendor with HTTP/. |
 
 (No Comal here → stdio runs its supported blocking mode; progress
 notifications keep the host alive during long calls.)

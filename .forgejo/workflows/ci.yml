@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         run: git clone --depth=1 ${{ github.server_url }}/${{ github.repository }}.git . -b "${{ github.head_ref || github.ref_name }}"
 
+      - name: Install PHP extensions
+        run: pkg install -y php84-curl php84-tokenizer
+
       - name: Verify syntax
         run: |
           find system classes libraries tools includes -name '*.php' -exec php -l {} \; 2>&1 | grep -v "No syntax errors" && exit 1 || true
@@ -39,9 +42,46 @@ jobs:
           echo 'OK' . PHP_EOL;
           "
 
+      - name: curl behaviour suite and lint (vendored libraries)
+        run: |
+          php tests/enchilada-curl/run.php --lib=libraries
+          php tests/enchilada-curl/lint_curl_door.php libraries/EnchiladaCurl libraries/EnchiladaMultiHTTP libraries/EnchiladaWorkerHTTP libraries/Enchilada/Tortilla
+
       - name: Build PHAR
         run: php -d phar.readonly=0 bin/build-phar.php
 
       - name: Verify PHAR initializes
         run: |
           echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"ci","version":"1.0"}}}' | php bookstack-mcp.phar --config=config/instances.json.sample 2>/dev/null | php -r '$d=json_decode(fgets(STDIN),true); assert($d["result"]["serverInfo"]["name"]==="bookstack-mcp"); echo "PHAR OK\n";' || echo "PHAR init skipped (no config)"
+
+  behaviour-windows:
+    runs-on: windows-2022
+    env:
+      PHP_DIR: C:\php84
+    steps:
+      - name: Checkout
+        shell: powershell
+        run: |
+          cd "$env:GITHUB_WORKSPACE"
+          Get-ChildItem | Remove-Item -Recurse -Force
+          $ref = if ($env:GITHUB_EVENT_NAME -eq 'pull_request') { $env:GITHUB_HEAD_REF } else { $env:GITHUB_SHA }
+          & curl.exe -fL --ssl-no-revoke --retry 6 --retry-delay 5 -o repo.tar.gz "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/archive/$ref.tar.gz"
+          if ($LASTEXITCODE -ne 0) { throw "repo tarball fetch failed (curl rc=$LASTEXITCODE)" }
+          tar xf repo.tar.gz --strip-components=1
+          Remove-Item repo.tar.gz
+
+      - name: PHP (preinstalled on runner02)
+        shell: powershell
+        run: |
+          if (-not (Test-Path "$env:PHP_DIR\php.exe")) { throw "PHP not installed at $env:PHP_DIR" }
+          Add-Content -Path $env:GITHUB_PATH -Value $env:PHP_DIR
+
+      - name: curl behaviour suite and lint (vendored libraries)
+        shell: powershell
+        run: |
+          cd "$env:GITHUB_WORKSPACE"
+          php -v
+          php tests/enchilada-curl/run.php --lib=libraries
+          if ($LASTEXITCODE -ne 0) { throw "behaviour suite failed" }
+          php tests/enchilada-curl/lint_curl_door.php libraries/EnchiladaCurl libraries/EnchiladaMultiHTTP libraries/EnchiladaWorkerHTTP libraries/Enchilada/Tortilla
+          if ($LASTEXITCODE -ne 0) { throw "curl lint failed" }
